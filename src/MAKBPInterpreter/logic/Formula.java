@@ -1,0 +1,30 @@
+package MAKBPInterpreter.logic;
+
+/**
+ * Represents the base of all components of the modal and epistemic logic
+ * representation.
+ */
+public interface Formula {
+    /**
+     * Verifies if the current object formula and {@code other} formula are the
+     * same.
+     * 
+     * @param other other formula to test the equality
+     * @return result of the equality test
+     */
+    public boolean equals(Object other);
+
+    /**
+     * Simplifies the logic formula.
+     * 
+     * @return simplified formula
+     */
+    public Formula simplify();
+
+    /**
+     * Returns the negation of the current formula.
+     * 
+     * @return negation of formula
+     */
+    public Formula getNegation();
+}
