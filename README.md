@@ -4,7 +4,7 @@
 Pour installer les packages nécessaires à l'utilisation de l'application, vous pouvez exécuter la suite de commandes spécifiées ci-dessous :
 ```sh
 $ sudo apt-get update
-$ sudo apt-get install openjdk-8-jdk openjdk-8-doc openjdk-8-jre-lib
+$ sudo apt-get install openjdk-8-jdk openjdk-8-doc openjdk-8-jre
 $ sudo apt-get install ant
 ```
 
