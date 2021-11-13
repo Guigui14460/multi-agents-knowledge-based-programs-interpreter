@@ -5,58 +5,65 @@ package MAKBPInterpreter.logic;
  */
 public class Not implements Formula {
     /**
-     * Inner formula.
+     * Operand of the logic operation.
      */
-    private Formula innerFormula;
+    private Formula operand;
 
     /**
      * Default constructor.
      * 
-     * @param innerFormula formula to make the negation
+     * @param operand formula to make the negation
      */
-    public Not(Formula innerFormula) {
-        this.innerFormula = innerFormula;
+    public Not(Formula operand) {
+        this.operand = operand;
     }
 
     @Override
     public String toString() {
-        return "~(" + this.innerFormula.toString() + ")";
+        return "~(" + this.operand.toString() + ")";
     }
 
     @Override
     public boolean equals(Object other) {
-        if (!other.getClass().equals(this.getClass())) {
+        if (this == other)
+            return true;
+        if (!(other instanceof Not))
             return false;
-        }
+
         Not otherNot = (Not) other;
-        return this.innerFormula.equals(otherNot.innerFormula);
+        return this.operand.equals(otherNot.operand);
     }
 
     @Override
     public Formula simplify() {
-        if (this.innerFormula.getClass().equals(this.getClass())) {
-            Not subformula = (Not) this.innerFormula;
-            return subformula.innerFormula.simplify();
+        if (this.operand.getClass().equals(this.getClass())) {
+            Not subformula = (Not) this.operand;
+            return subformula.operand.simplify();
         }
-        if (this.innerFormula instanceof And || this.innerFormula instanceof Or || this.innerFormula instanceof Imply
-                || this.innerFormula instanceof BidirectionnalImply) {
-            return this.innerFormula.getNegation().simplify();
+        if (this.operand instanceof And || this.operand instanceof Or || this.operand instanceof Implication
+                || this.operand instanceof Equivalence) {
+            return this.operand.getNegation().simplify();
         }
         return this;
-    }
-
-    /**
-     * Gets the inner formula object.
-     * 
-     * @return inner formula object
-     * @see #innerFormula
-     */
-    public Formula getInnerFormula() {
-        return this.innerFormula;
     }
 
     @Override
     public Formula getNegation() {
         return new Not(this).simplify();
+    }
+
+    @Override
+    public boolean contains(Formula otherFormula) {
+        return this.equals(otherFormula) || this.operand.contains(otherFormula);
+    }
+
+    /**
+     * Gets the operand object.
+     * 
+     * @return operand object
+     * @see #operand
+     */
+    public Formula getOperand() {
+        return this.operand;
     }
 }

@@ -27,4 +27,13 @@ public interface Formula {
      * @return negation of formula
      */
     public Formula getNegation();
+
+    /**
+     * Returns {@code true} if this formula contains the specified formula.
+     * 
+     * @param otherFormula other formula whose presence in this formula is to be
+     *                     tested
+     * @return {@code true} if this formula contains the specified formula
+     */
+    public boolean contains(Formula otherFormula);
 }

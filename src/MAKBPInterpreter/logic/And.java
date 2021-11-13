@@ -1,47 +1,48 @@
 package MAKBPInterpreter.logic;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Represents the conjunction of a set of formulas.
+ * Represents the conjunction of a set of operands.
  */
 public class And implements Formula {
     /**
-     * Set of inner formulas.
+     * Set of operands.
      */
-    private Set<Formula> innerFormulas;
+    private Set<Formula> operands;
 
     /**
-     * Constructor.
+     * Constructor with collection of operands.
      * 
-     * @param formulas collection of formulas
+     * @param operands collection of operands
      */
-    public And(Collection<Formula> formulas) {
-        this.innerFormulas = new HashSet<>();
-        for (Formula formula : formulas) {
-            this.innerFormulas.add(formula.simplify());
+    public And(Collection<Formula> operands) {
+        this.operands = new HashSet<>();
+        for (Formula operand : operands) {
+            this.operands.add(operand);
         }
     }
 
     /**
-     * Constructor.
+     * Constructor with operands array.
      * 
-     * @param formulas undifined number of formulas
+     * @param operands undifined number of operands
      */
-    public And(Formula... formulas) {
-        this(Arrays.asList(formulas));
+    public And(Formula... operands) {
+        this.operands = new HashSet<>();
+        Collections.addAll(this.operands, operands);
     }
 
     @Override
     public String toString() {
         String string = "";
-        int size = this.innerFormulas.size();
+        int size = this.operands.size();
         int current = 1;
-        for (Formula formula : this.innerFormulas) {
-            string += "(" + formula.toString() + ")";
+        for (Formula operand : this.operands) {
+            string += "(" + operand.toString() + ")";
             if (current < size) {
                 string += " & ";
                 current++;
@@ -51,26 +52,28 @@ public class And implements Formula {
     }
 
     /**
-     * Checks if the formulas are contained in the other set of formulas.
+     * Checks if the operands are the same as the other set of operands.
      */
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof And)) {
+        if (this == other)
+            return true;
+        if (!(other instanceof And))
             return false;
-        }
+
         And otherAnd = (And) other;
 
-        if (otherAnd.innerFormulas.size() != this.innerFormulas.size()) {
+        if (otherAnd.operands.size() != this.operands.size()) {
             return false;
         }
 
-        for (Formula formula1 : this.innerFormulas) {
-            boolean formula1IsFormula2 = false;
-            for (Formula formula2 : otherAnd.innerFormulas) {
-                formula1IsFormula2 |= formula1.equals(formula2);
+        for (Formula operand1 : this.operands) {
+            boolean operand1IsOperand2 = false;
+            for (Formula operand2 : otherAnd.operands) {
+                operand1IsOperand2 |= operand1.equals(operand2);
             }
-            if (!formula1IsFormula2) {
-                return false; // we didn't find formula1 in otherAnd.innerFormulas set
+            if (!operand1IsOperand2) {
+                return false; // we didn't find operand1 in otherAnd.operands set
             }
         }
         return true;
@@ -78,36 +81,45 @@ public class And implements Formula {
 
     @Override
     public Formula simplify() {
-        Set<Formula> formulas = new HashSet<>();
-        for (Formula formula : this.innerFormulas) {
-            if (formula instanceof And) {
-                And and = (And) formula;
-                for (Formula andFormula : and.innerFormulas) {
-                    formulas.add(andFormula.simplify());
+        Set<Formula> operands = new HashSet<>();
+        for (Formula operand : this.operands) {
+            if (operand instanceof And) {
+                And and = (And) operand;
+                for (Formula andFormula : and.operands) {
+                    operands.add(andFormula.simplify());
                 }
             } else {
-                formulas.add(formula.simplify());
+                operands.add(operand.simplify());
             }
         }
-        return new And(formulas);
-    }
-
-    /**
-     * Gets the inner formulas set object.
-     * 
-     * @return inner formulas set object
-     * @see #innerFormulas
-     */
-    public Set<Formula> getInnerFormulas() {
-        return this.innerFormulas;
+        return new And(operands);
     }
 
     @Override
     public Formula getNegation() {
-        Set<Formula> formulas = new HashSet<>();
-        for (Formula formula : this.innerFormulas) {
-            formulas.add(formula.getNegation());
+        Set<Formula> operands = new HashSet<>();
+        for (Formula operand : this.operands) {
+            operands.add(operand.getNegation());
         }
-        return new Or(formulas).simplify();
+        return new Or(operands).simplify();
+    }
+
+    @Override
+    public boolean contains(Formula otherFormula) {
+        boolean contains = false;
+        for (Formula operand : this.operands) {
+            contains |= operand.contains(otherFormula);
+        }
+        return contains;
+    }
+
+    /**
+     * Gets a copy of the operands set object.
+     * 
+     * @return operands set object
+     * @see #operands
+     */
+    public Set<Formula> getOperands() {
+        return new HashSet<>(this.operands);
     }
 }

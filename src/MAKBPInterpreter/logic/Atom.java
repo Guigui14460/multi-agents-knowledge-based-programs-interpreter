@@ -5,31 +5,33 @@ package MAKBPInterpreter.logic;
  */
 public class Atom implements Formula {
     /**
-     * Name of the proposition.
+     * Predicate of the proposition.
      */
-    private String name;
+    private String predicate;
 
     /**
      * Default constructor of the atom.
      * 
-     * @param name proposition name
+     * @param predicate proposition predicate
      */
-    public Atom(String name) {
-        this.name = name;
+    public Atom(String predicate) {
+        this.predicate = predicate;
     }
 
     @Override
     public String toString() {
-        return this.name;
+        return this.predicate;
     }
 
     @Override
     public boolean equals(Object other) {
-        if (!other.getClass().equals(this.getClass())) {
+        if (this == other)
+            return true;
+        if (!(other instanceof Atom))
             return false;
-        }
+
         Atom otherAtom = (Atom) other;
-        return name.equals(otherAtom.name);
+        return predicate.equals(otherAtom.predicate);
     }
 
     @Override
@@ -40,5 +42,10 @@ public class Atom implements Formula {
     @Override
     public Formula getNegation() {
         return new Not(this).simplify();
+    }
+
+    @Override
+    public boolean contains(Formula otherFormula) {
+        return this.equals(otherFormula);
     }
 }

@@ -3,6 +3,7 @@ package MAKBPInterpreter.logic.tests;
 import org.junit.Test;
 
 import MAKBPInterpreter.logic.Atom;
+import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
 import junit.framework.TestCase;
 
@@ -11,10 +12,10 @@ import junit.framework.TestCase;
  */
 public class TestNot extends TestCase {
     /**
-     * Tests the {@link MAKBPInterpreter.logic.Not#getInnerFormula()} method.
+     * Tests the {@link MAKBPInterpreter.logic.Not#getOperand()} method.
      */
     @Test
-    public void testGetInnerFormula() {
+    public void testGetOperand() {
         Atom atom = new Atom("a is muddy");
         Not not1 = new Not(atom);
         Not not2 = new Not(not1);
@@ -22,8 +23,8 @@ public class TestNot extends TestCase {
         assertNotNull("Must not be null", not1);
         assertNotNull("Must not be null", not2);
 
-        assertSame("Those formulas must be the same", atom, not1.getInnerFormula());
-        assertSame("Those formulas must be the same", not1, not2.getInnerFormula());
+        assertSame("Those formulas must be the same", atom, not1.getOperand());
+        assertSame("Those formulas must be the same", not1, not2.getOperand());
     }
 
     /**
@@ -76,5 +77,23 @@ public class TestNot extends TestCase {
         assertNotNull("Must not be null", not1);
 
         assertEquals("Must be equal", atom1, not1.getNegation());
+    }
+
+    /**
+     * Tests the {@link MAKBPInterpreter.logic.Not#contains(Formula)} method.
+     */
+    @Test
+    public void testContains() {
+        Atom atom1 = new Atom("a is muddy");
+        Atom atom2 = new Atom("b is muddy");
+        Not not1 = new Not(atom1);
+
+        assertNotNull("Must not be null", atom1);
+        assertNotNull("Must not be null", atom2);
+        assertNotNull("Must not be null", not1);
+
+        assertTrue("The formula must contains the other formula", not1.contains(atom1));
+        assertFalse("The formula must not contains the other formula", not1.contains(atom2));
+        assertFalse("The formula must not contains the other formula", not1.contains(new Not(atom2)));
     }
 }

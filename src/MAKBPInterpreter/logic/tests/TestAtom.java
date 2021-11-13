@@ -3,6 +3,7 @@ package MAKBPInterpreter.logic.tests;
 import org.junit.Test;
 
 import MAKBPInterpreter.logic.Atom;
+import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
 import junit.framework.TestCase;
 
@@ -52,5 +53,22 @@ public class TestAtom extends TestCase {
         assertNotNull("Must not be null", not1);
 
         assertNotSame("Those formulas must not be the same", not1, atom1.getNegation());
+    }
+
+    /**
+     * Tests the {@link MAKBPInterpreter.logic.Atom#contains(Formula)} method.
+     */
+    @Test
+    public void testContains() {
+        Atom atom1 = new Atom("a is muddy");
+        Atom atom2 = new Atom("a is muddy");
+        Atom atom3 = new Atom("b is muddy");
+
+        assertNotNull("Must not be null", atom1);
+        assertNotNull("Must not be null", atom2);
+        assertNotNull("Must not be null", atom3);
+
+        assertTrue("The formula must contains the other formula", atom1.contains(atom2));
+        assertFalse("The formula must not contains the other formula", atom1.contains(atom3));
     }
 }

@@ -17,10 +17,10 @@ import junit.framework.TestCase;
  */
 public class TestOr extends TestCase {
     /**
-     * Tests the {@link MAKBPInterpreter.logic.Or#getInnerFormulas()} method.
+     * Tests the {@link MAKBPInterpreter.logic.Or#getOperands()} method.
      */
     @Test
-    public void testGetInnerFormula() {
+    public void testGetOperands() {
         Atom atom = new Atom("a is muddy");
         Atom atom2 = new Atom("b is muddy");
         Set<Formula> set = new HashSet<>();
@@ -31,8 +31,8 @@ public class TestOr extends TestCase {
 
         assertNotNull("Must not be null", or);
 
-        assertEquals("Must be equal", 2, or.getInnerFormulas().size());
-        assertEquals("Must be equal", set, or.getInnerFormulas());
+        assertEquals("Must be equal", 2, or.getOperands().size());
+        assertEquals("Must be equal", set, or.getOperands());
     }
 
     /**
@@ -112,5 +112,26 @@ public class TestOr extends TestCase {
         assertNotNull("Must not be null", or1);
 
         assertEquals("Must be equal", and1, or1.getNegation());
+    }
+
+    /**
+     * Tests the {@link MAKBPInterpreter.logic.Or#contains(Formula)} method.
+     */
+    @Test
+    public void testContains() {
+        Atom atom1 = new Atom("a is muddy");
+        Atom atom2 = new Atom("b is muddy");
+        Atom atom3 = new Atom("c is muddy");
+        Or or1 = new Or(atom1, new Not(atom2));
+
+        assertNotNull("Must not be null", atom1);
+        assertNotNull("Must not be null", atom2);
+        assertNotNull("Must not be null", atom3);
+        assertNotNull("Must not be null", or1);
+
+        assertTrue("The formula must contains the other formula", or1.contains(atom1));
+        assertTrue("The formula must contains the other formula", or1.contains(atom2));
+        assertTrue("The formula must contains the other formula", or1.contains(new Not(atom2)));
+        assertFalse("The formula must not contains the other formula", or1.contains(atom3));
     }
 }
