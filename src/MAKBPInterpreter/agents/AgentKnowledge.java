@@ -1,7 +1,11 @@
 package MAKBPInterpreter.agents;
 
+import java.util.Map;
+
+import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
+import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
 
 /**
  * Represents an agent knowledge about the world.
@@ -70,5 +74,10 @@ public class AgentKnowledge implements Formula {
      */
     public Agent getAgent() {
         return this.agent;
+    }
+
+    @Override
+    public boolean evaluate(Map<Atom, Boolean> state) throws FormulaNotSupported {
+        return this.innerFormula.evaluate(state);
     }
 }

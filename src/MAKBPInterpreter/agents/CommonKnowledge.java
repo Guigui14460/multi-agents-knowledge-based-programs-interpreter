@@ -1,9 +1,12 @@
 package MAKBPInterpreter.agents;
 
+import java.util.Map;
 import java.util.Set;
 
+import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
+import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
 
 /**
  * Represents a set of agents knowing a common formula.
@@ -62,5 +65,10 @@ public class CommonKnowledge implements Formula {
      */
     public Set<Agent> getAgents() {
         return this.agents;
+    }
+
+    @Override
+    public boolean evaluate(Map<Atom, Boolean> state) throws FormulaNotSupported {
+        throw new FormulaNotSupported("Not implemented");
     }
 }

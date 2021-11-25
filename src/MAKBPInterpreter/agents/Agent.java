@@ -3,13 +3,11 @@ package MAKBPInterpreter.agents;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
 import MAKBPInterpreter.logic.Or;
 
-// TODO: maj des docs pour les conditions
 /**
  * Represents an agent evolving into an environment.
  */
@@ -24,7 +22,7 @@ public class Agent {
      * 
      * If a null formula is provided, the agent deduce that is the else case.
      */
-    private SortedMap<Formula, Action> conditions;
+    private Map<Formula, Action> conditions;
 
     /**
      * Last selected action linked to the last seen observation.
@@ -38,7 +36,7 @@ public class Agent {
      * @param conditions used to select the right associated action to an
      *                   observation
      */
-    public Agent(String name, SortedMap<Formula, Action> conditions) {
+    public Agent(String name, Map<Formula, Action> conditions) {
         this.name = name;
         this.conditions = conditions;
     }

@@ -1,5 +1,9 @@
 package MAKBPInterpreter.logic;
 
+import java.util.Map;
+
+import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
+
 /**
  * Represents the base of all components of the modal and epistemic logic
  * representation.
@@ -36,4 +40,14 @@ public interface Formula {
      * @return {@code true} if this formula contains the specified formula
      */
     public boolean contains(Formula otherFormula);
+
+    /**
+     * Evaluates a state that we passed into arguments.
+     * 
+     * @param state state to evaluate
+     * @return result of the evaluation
+     * @throws FormulaNotSupported throws when the formula not supported this
+     *                             operation
+     */
+    public boolean evaluate(Map<Atom, Boolean> state) throws FormulaNotSupported;
 }

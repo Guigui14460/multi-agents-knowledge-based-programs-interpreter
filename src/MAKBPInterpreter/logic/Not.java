@@ -1,5 +1,9 @@
 package MAKBPInterpreter.logic;
 
+import java.util.Map;
+
+import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
+
 /**
  * Represents the negation of a formula.
  */
@@ -65,5 +69,10 @@ public class Not implements Formula {
      */
     public Formula getOperand() {
         return this.operand;
+    }
+
+    @Override
+    public boolean evaluate(Map<Atom, Boolean> state) throws FormulaNotSupported {
+        return !this.operand.evaluate(state);
     }
 }

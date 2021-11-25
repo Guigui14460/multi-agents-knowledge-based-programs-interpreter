@@ -3,7 +3,10 @@ package MAKBPInterpreter.logic;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
 
 /**
  * Represents the conjunction of a set of operands.
@@ -121,5 +124,15 @@ public class And implements Formula {
      */
     public Set<Formula> getOperands() {
         return new HashSet<>(this.operands);
+    }
+
+    @Override
+    public boolean evaluate(Map<Atom, Boolean> state) throws FormulaNotSupported {
+        for (Formula formula : this.operands) {
+            if (!formula.evaluate(state)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

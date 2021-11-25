@@ -2,13 +2,8 @@ package MAKBPInterpreter.agents;
 
 import java.util.Map;
 
-import MAKBPInterpreter.logic.And;
 import MAKBPInterpreter.logic.Atom;
-import MAKBPInterpreter.logic.Equivalence;
 import MAKBPInterpreter.logic.Formula;
-import MAKBPInterpreter.logic.Implication;
-import MAKBPInterpreter.logic.Not;
-import MAKBPInterpreter.logic.Or;
 import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
 
 /**
@@ -53,40 +48,8 @@ public class KripkeWorld {
         this(KripkeWorld.id.toString(), assignment);
     }
 
-    public boolean satisfied(Formula formula, KripkeStructure structure) throws FormulaNotSupported {
-        boolean ok;
-        if (formula instanceof Atom) {
-            Atom atom = (Atom) formula;
-            ok = this.assignment.getOrDefault(atom, false);
-        } else if (formula instanceof Not) {
-            Not not = (Not) formula;
-            ok = !this.satisfied(not.getOperand(), structure);
-        } else if (formula instanceof Or) {
-            ok = false;
-            for (Formula innerOr : ((Or) formula).getOperands()) {
-                ok |= this.satisfied(innerOr, structure);
-            }
-        } else if (formula instanceof And) {
-            ok = true;
-            for (Formula innerAnd : ((And) formula).getOperands()) {
-                ok &= this.satisfied(innerAnd, structure);
-            }
-        } else if (formula instanceof Implication) {
-            Implication implication = (Implication) formula;
-            ok = !this.satisfied(implication.getLeftOperand(), structure)
-                    || this.satisfied(implication.getRightOperand(), structure);
-        } else if (formula instanceof Equivalence) {
-            ok = this.satisfied(formula.simplify(), structure);
-        } else if (formula instanceof AgentKnowledge) {
-            AgentKnowledge k_a = (AgentKnowledge) formula;
-            ok = true;
-            for (KripkeWorld world : structure.getWorldFromOtherWorldAndAgent(this, k_a.getAgent())) {
-                ok &= world.satisfied(k_a.getInnerFormula(), structure);
-            }
-        } else {
-            throw new FormulaNotSupported("You need to derive and herite this method to handle your formula");
-        }
-        return ok;
+    public boolean satisfied(Formula formula) throws FormulaNotSupported {
+        return formula.evaluate(this.assignment);
     }
 
     @Override

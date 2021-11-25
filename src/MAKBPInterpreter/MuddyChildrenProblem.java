@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import MAKBPInterpreter.agents.Action;
 import MAKBPInterpreter.agents.Agent;
@@ -46,7 +44,7 @@ public class MuddyChildrenProblem {
         // create agents
         List<Agent> agents = new ArrayList<>();
         for (Integer i = 0; i < 4; i++) {
-            SortedMap<Formula, Action> conditions = new TreeMap<>();
+            Map<Formula, Action> conditions = new HashMap<>();
             Agent agent = new Agent(i.toString(), conditions);
             conditions.put(new AgentKnowledge(agent, new Atom("sale")), denounceItself);
             conditions.put(new Not(new AgentKnowledge(agent, new Atom("sale"))), beQuiet);
@@ -54,6 +52,6 @@ public class MuddyChildrenProblem {
 
         // create graph
         Map<KripkeWorld, Map<KripkeWorld, Agent>> graph = new HashMap<>();
-
+        // TODO: à finir
     }
 }

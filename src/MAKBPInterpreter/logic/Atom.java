@@ -1,5 +1,7 @@
 package MAKBPInterpreter.logic;
 
+import java.util.Map;
+
 /**
  * Represents an atom, a proposition.
  */
@@ -47,5 +49,10 @@ public class Atom implements Formula {
     @Override
     public boolean contains(Formula otherFormula) {
         return this.equals(otherFormula);
+    }
+
+    @Override
+    public boolean evaluate(Map<Atom, Boolean> state) {
+        return state.getOrDefault(this, false);
     }
 }
