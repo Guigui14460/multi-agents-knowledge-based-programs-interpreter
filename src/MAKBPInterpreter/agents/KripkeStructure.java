@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import MAKBPInterpreter.logic.Formula;
-import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
 
 /**
  * Represents a system of raisonning for modal logic.
@@ -122,13 +121,13 @@ public class KripkeStructure {
      * Called when a public announcement is formulated.
      * 
      * @param formula formula to announce
-     * @throws FormulaNotSupported if a formula is not supported by the program
+     * @throws Exception
      */
-    public void publicAnnouncement(Formula formula) throws FormulaNotSupported {
+    public void publicAnnouncement(Formula formula) throws Exception {
         // we check the world that not satisfied the formula
         Set<KripkeWorld> worldsToRemove = new HashSet<>();
         for (KripkeWorld world : this.graph.keySet()) {
-            if (!world.satisfied(formula)) {
+            if (!world.satisfied(formula, this)) {
                 worldsToRemove.add(world);
             }
         }

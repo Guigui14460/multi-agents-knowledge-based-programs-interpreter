@@ -2,8 +2,6 @@ package MAKBPInterpreter.logic;
 
 import java.util.Map;
 
-import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
-
 /**
  * Represents the equivalence of a formula to an other.
  */
@@ -83,9 +81,9 @@ public class Equivalence implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state) throws FormulaNotSupported {
-        boolean evalLeft = this.leftOperand.evaluate(state);
-        boolean evalRight = this.rightOperand.evaluate(state);
+    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
+        boolean evalLeft = this.leftOperand.evaluate(state, objects);
+        boolean evalRight = this.rightOperand.evaluate(state, objects);
 
         return (!evalLeft || evalRight) && (!evalRight || evalLeft);
     }

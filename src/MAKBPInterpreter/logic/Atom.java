@@ -52,7 +52,7 @@ public class Atom implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state) {
+    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) {
         return state.getOrDefault(this, false);
     }
 }

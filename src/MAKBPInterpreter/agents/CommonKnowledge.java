@@ -68,7 +68,7 @@ public class CommonKnowledge implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state) throws FormulaNotSupported {
+    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws FormulaNotSupported {
         throw new FormulaNotSupported("Not implemented");
     }
 }

@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
-
 /**
  * Represents the disjunction of a set of operands.
  */
@@ -127,9 +125,9 @@ public class Or implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state) throws FormulaNotSupported {
+    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
         for (Formula formula : this.operands) {
-            if (formula.evaluate(state)) {
+            if (formula.evaluate(state, objects)) {
                 return true;
             }
         }

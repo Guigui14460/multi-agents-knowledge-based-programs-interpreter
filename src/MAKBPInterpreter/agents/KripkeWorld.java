@@ -4,7 +4,6 @@ import java.util.Map;
 
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
-import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
 
 /**
  * Class representing a world in a
@@ -48,8 +47,8 @@ public class KripkeWorld {
         this(KripkeWorld.id.toString(), assignment);
     }
 
-    public boolean satisfied(Formula formula) throws FormulaNotSupported {
-        return formula.evaluate(this.assignment);
+    public boolean satisfied(Formula formula, KripkeStructure structure) throws Exception {
+        return formula.evaluate(this.assignment, this, structure);
     }
 
     @Override

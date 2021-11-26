@@ -2,8 +2,6 @@ package MAKBPInterpreter.logic;
 
 import java.util.Map;
 
-import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
-
 /**
  * Represents the implication of a formula to an other.
  */
@@ -82,7 +80,7 @@ public class Implication implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state) throws FormulaNotSupported {
-        return !this.leftOperand.evaluate(state) || this.rightOperand.evaluate(state);
+    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
+        return !this.leftOperand.evaluate(state, objects) || this.rightOperand.evaluate(state, objects);
     }
 }
