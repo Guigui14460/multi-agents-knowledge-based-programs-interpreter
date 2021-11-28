@@ -9,13 +9,17 @@ $ sudo apt-get install ant
 ```
 
 ## Commandes
-- Pour lancer l'application, vous pouvez lancer :
+- Pour lancer l'application (la toute première fois), vous pouvez lancer :
 ```bash
 $ ant run
 ```
 ou simplement
 ```bash
 $ ant
+```
+- Pour lancer l'application sans tout reconstruire, vous pouvez lancer :
+```bash
+$ ant run_dist
 ```
 
 - Pour lancer les tests unitaires des classes implémentées, vous pouvez lancer :

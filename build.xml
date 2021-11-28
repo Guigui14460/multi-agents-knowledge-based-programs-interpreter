@@ -98,8 +98,13 @@
         </javadoc>
     </target>
 
+    <!-- ==================== Run package Target ================================== -->
+    <target name="run_dist" description="Only run the previous generated distribution package">
+        <java jar="${dist.home}/${app.fullname}.jar" fork="true" />
+    </target>
+
     <!-- ==================== Run Target ================================== -->
-    <target name="run" depends="dist">
+    <target name="run" depends="dist" description="Build the distribution package and run the application">
         <java jar="${dist.home}/${app.fullname}.jar" fork="true" />
     </target>
 
