@@ -72,7 +72,8 @@ public class KripkeStructure {
         Map<KripkeWorld, Map<KripkeWorld, Agent>> graph2 = new HashMap<>();
         for (KripkeWorld key : graph.keySet()) {
             Map<KripkeWorld, Agent> linkGraph1 = graph.get(key);
-            Map<KripkeWorld, Agent> linkGraph2 = graph2.get(key);
+            Map<KripkeWorld, Agent> linkGraph2 = new HashMap<>();
+            graph2.put(key, linkGraph2);
 
             // copy
             for (KripkeWorld key2 : linkGraph1.keySet()) {
@@ -103,7 +104,8 @@ public class KripkeStructure {
                 graph2.put(key, new HashMap<>());
             }
             Map<KripkeWorld, Agent> linkGraph1 = graph.get(key);
-            Map<KripkeWorld, Agent> linkGraph2 = graph2.get(key);
+            Map<KripkeWorld, Agent> linkGraph2 = new HashMap<>();
+            graph2.put(key, linkGraph2);
 
             for (KripkeWorld key2 : linkGraph1.keySet()) {
                 Agent value = linkGraph1.get(key2); // link where in graph
