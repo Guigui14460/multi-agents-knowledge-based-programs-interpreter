@@ -6,7 +6,6 @@ import java.util.Set;
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
-import MAKBPInterpreter.logic.exceptions.FormulaNotSupported;
 
 /**
  * Represents a set of agents knowing a common formula.
@@ -25,17 +24,17 @@ public class CommonKnowledge implements Formula {
     /**
      * Default constructor.
      * 
-     * @param agents  set of agents where each of this knows the {@code formula}
      * @param formula knowledge
+     * @param agents  set of agents where each of this knows the {@code formula}
      */
-    public CommonKnowledge(Set<Agent> agents, Formula formula) {
+    public CommonKnowledge(Formula formula, Set<Agent> agents) {
         this.agents = agents;
         this.innerFormula = formula;
     }
 
     @Override
     public Formula simplify() {
-        return new CommonKnowledge(this.agents, this.innerFormula.simplify());
+        return new CommonKnowledge(this.innerFormula.simplify(), this.agents);
     }
 
     @Override
@@ -68,7 +67,23 @@ public class CommonKnowledge implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws FormulaNotSupported {
-        throw new FormulaNotSupported("Not implemented");
+    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
+        // we have always two additionnal arguments but we verify that is the case
+        if (objects.length < 2) {
+            throw new IllegalArgumentException("We must have at least the world and the Kripke structure");
+        }
+        KripkeWorld world = (KripkeWorld) objects[0];
+        KripkeStructure structure = (KripkeStructure) objects[1];
+        boolean result = true;
+        // we check if the worlds connected to the actual world satisfied the formula or
+        // not
+        // in other words, if it satisfied, it's because the world is a correct one for
+        // all agents
+        for (Agent agent : this.agents) {
+            for (KripkeWorld otherWorld : structure.getWorldFromOtherWorldAndAgent(world, agent)) {
+                result &= this.innerFormula.evaluate(otherWorld.getAssignment(), objects);
+            }
+        }
+        return result;
     }
 }
