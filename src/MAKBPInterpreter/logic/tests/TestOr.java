@@ -1,6 +1,10 @@
 package MAKBPInterpreter.logic.tests;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
@@ -17,6 +21,30 @@ import junit.framework.TestCase;
  */
 public class TestOr extends TestCase {
     /**
+     * Tests the {@link MAKBPInterpreter.logic.Or#Or(Formula...)} and
+     * {@link MAKBPInterpreter.logic.Or#Or(java.util.Collection)} constructors.
+     */
+    @Test
+    public void testConstructors() {
+        Atom atom1, atom2;
+        atom1 = new Atom("a is muddy");
+        atom2 = new Atom("b is muddy");
+
+        Or or0 = new Or();
+        Or or1 = new Or(atom1, atom2);
+        Or or2 = new Or(atom2, atom1);
+        List<Formula> list = new ArrayList<>();
+        list.add(atom1);
+        list.add(atom2);
+        Or or1list = new Or(list);
+
+        assertNotNull("Must not be null", or0);
+        assertNotNull("Must not be null", or1);
+        assertNotNull("Must not be null", or2);
+        assertNotNull("Must not be null", or1list);
+    }
+
+    /**
      * Tests the {@link MAKBPInterpreter.logic.Or#getOperands()} method.
      */
     @Test
@@ -28,8 +56,6 @@ public class TestOr extends TestCase {
         set.add(atom2);
 
         Or or = new Or(atom, atom2);
-
-        assertNotNull("Must not be null", or);
 
         assertEquals("Must be equal", 2, or.getOperands().size());
         assertEquals("Must be equal", set, or.getOperands());
@@ -46,9 +72,6 @@ public class TestOr extends TestCase {
 
         Or or1 = new Or(atom1, atom2);
         Or or2 = new Or(atom2, atom1);
-
-        assertNotNull("Must not be null", or1);
-        assertNotNull("Must not be null", or2);
 
         assertTrue("Those formulas must be the same", or1.equals(or2));
     }
@@ -68,9 +91,6 @@ public class TestOr extends TestCase {
         simplifiedFormulas.add(not1);
         simplifiedFormulas.add(atom);
         Or or2 = new Or(simplifiedFormulas);
-
-        assertNotNull("Must not be null", or1);
-        assertNotNull("Must not be null", or2);
 
         assertEquals("All inner formulas must be simplified", or2, or1.simplify());
     }
@@ -92,9 +112,6 @@ public class TestOr extends TestCase {
         simplifiedFormulas.add(atom);
         Or or2 = new Or(simplifiedFormulas);
 
-        assertNotNull("Must not be null", or1);
-        assertNotNull("Must not be null", or2);
-
         assertEquals("All inner formulas must be simplified", or2, or1.simplify());
     }
 
@@ -109,8 +126,6 @@ public class TestOr extends TestCase {
         Or or1 = new Or(atom1, not1, new And(atom1, not1));
         And and1 = new And(not1, atom1, new Or(not1, atom1));
 
-        assertNotNull("Must not be null", or1);
-
         assertEquals("Must be equal", and1, or1.getNegation());
     }
 
@@ -124,14 +139,41 @@ public class TestOr extends TestCase {
         Atom atom3 = new Atom("c is muddy");
         Or or1 = new Or(atom1, new Not(atom2));
 
-        assertNotNull("Must not be null", atom1);
-        assertNotNull("Must not be null", atom2);
-        assertNotNull("Must not be null", atom3);
-        assertNotNull("Must not be null", or1);
-
         assertTrue("The formula must contains the other formula", or1.contains(atom1));
         assertTrue("The formula must contains the other formula", or1.contains(atom2));
         assertTrue("The formula must contains the other formula", or1.contains(new Not(atom2)));
         assertFalse("The formula must not contains the other formula", or1.contains(atom3));
+    }
+
+    /**
+     * Tests the
+     * {@link MAKBPInterpreter.logic.Or#evaluate(java.util.Map, Object...)}
+     * method.
+     */
+    @Test
+    public void testEvaluate() {
+        Atom atom1 = new Atom("a is muddy");
+        Atom atom2 = new Atom("b is muddy");
+        Atom atom3 = new Atom("c is muddy");
+        Or or1 = new Or(atom1, atom2);
+        Or or2 = new Or(atom2, atom3);
+
+        Map<Atom, Boolean> assignment = new HashMap<>();
+        assignment.put(atom1, true);
+        assignment.put(atom2, false);
+        assignment.put(atom3, false);
+
+        try {
+            assertTrue("The atom must be true", or1.evaluate(assignment));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown");
+        }
+        try {
+            assertFalse("The atom must be false", or2.evaluate(assignment));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown");
+        }
     }
 }

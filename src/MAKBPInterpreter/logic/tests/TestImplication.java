@@ -1,5 +1,8 @@
 package MAKBPInterpreter.logic.tests;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 
 import MAKBPInterpreter.logic.And;
@@ -15,6 +18,24 @@ import junit.framework.TestCase;
  */
 public class TestImplication extends TestCase {
     /**
+     * Tests the
+     * {@link MAKBPInterpreter.logic.Implication#Implication(Formula, Formula)}
+     * constructor.
+     */
+    @Test
+    public void testConstructor() {
+        Atom atom1, atom2;
+        atom1 = new Atom("a is muddy");
+        atom2 = new Atom("b is muddy");
+
+        Implication imply1 = new Implication(atom1, atom2);
+        Implication imply2 = new Implication(atom2, atom1);
+
+        assertNotNull("Must not be null", imply1);
+        assertNotNull("Must not be null", imply2);
+    }
+
+    /**
      * Tests the {@link MAKBPInterpreter.logic.Implication#getLeftOperand()} method.
      */
     @Test
@@ -23,8 +44,6 @@ public class TestImplication extends TestCase {
         Atom atom2 = new Atom("b is muddy");
 
         Implication imply1 = new Implication(atom1, atom2);
-
-        assertNotNull("Must not be null", imply1);
 
         assertEquals("Must be equal", atom1, imply1.getLeftOperand());
     }
@@ -39,8 +58,6 @@ public class TestImplication extends TestCase {
         Atom atom2 = new Atom("b is muddy");
 
         Implication imply1 = new Implication(atom1, atom2);
-
-        assertNotNull("Must not be null", imply1);
 
         assertEquals("Must be equal", atom2, imply1.getRightOperand());
     }
@@ -57,9 +74,6 @@ public class TestImplication extends TestCase {
         Implication imply1 = new Implication(atom1, atom2);
         Implication imply2 = new Implication(atom2, atom1);
 
-        assertNotNull("Must not be null", imply1);
-        assertNotNull("Must not be null", imply2);
-
         assertFalse("Those formulas must not be the same", imply1.equals(imply2));
     }
 
@@ -75,7 +89,6 @@ public class TestImplication extends TestCase {
 
         Formula expected = new Or(atom1, atom2, new Not(atom1));
 
-        assertNotNull("Must not be null", imply1);
         assertNotNull("Must not be null", expected);
 
         assertEquals("All inner formulas must be simplified", expected, imply1.simplify());
@@ -93,7 +106,6 @@ public class TestImplication extends TestCase {
 
         Formula expected = new And(new Not(atom1), new Not(atom2), atom1);
 
-        assertNotNull("Must not be null", imply1);
         assertNotNull("Must not be null", expected);
 
         assertEquals("Must be equal", expected, imply1.getNegation());
@@ -110,13 +122,47 @@ public class TestImplication extends TestCase {
         Atom atom3 = new Atom("c is muddy");
         Implication imply1 = new Implication(atom1, new Not(atom2));
 
-        assertNotNull("Must not be null", atom1);
-        assertNotNull("Must not be null", atom2);
-        assertNotNull("Must not be null", atom3);
-        assertNotNull("Must not be null", imply1);
-
         assertTrue("The formula must contains the other formula", imply1.contains(atom1));
         assertTrue("The formula must contains the other formula", imply1.contains(atom2));
         assertFalse("The formula must not contains the other formula", imply1.contains(atom3));
+    }
+
+    /**
+     * Tests the
+     * {@link MAKBPInterpreter.logic.Implication#evaluate(java.util.Map, Object...)}
+     * method.
+     */
+    @Test
+    public void testEvaluate() {
+        Atom atom1 = new Atom("a is muddy");
+        Atom atom2 = new Atom("b is muddy");
+        Atom atom3 = new Atom("c is muddy");
+        Implication imply1 = new Implication(atom1, atom2);
+        Implication imply2 = new Implication(atom2, atom3);
+        Implication imply3 = new Implication(atom3, atom3);
+
+        Map<Atom, Boolean> assignment = new HashMap<>();
+        assignment.put(atom1, true);
+        assignment.put(atom2, true);
+        assignment.put(atom3, false);
+
+        try {
+            assertTrue("The atom must be true", imply1.evaluate(assignment));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown");
+        }
+        try {
+            assertFalse("The atom must be false", imply2.evaluate(assignment));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown");
+        }
+        try {
+            assertTrue("The atom must be true", imply3.evaluate(assignment));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown");
+        }
     }
 }
