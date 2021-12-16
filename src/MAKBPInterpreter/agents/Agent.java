@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import MAKBPInterpreter.logic.And;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
 import MAKBPInterpreter.logic.Or;
@@ -17,6 +18,8 @@ public class Agent {
      */
     private String name;
 
+    // TODO: may be modify to two ordered lists (one for key and one for value with
+    // the same exact size)
     /**
      * Conditions used to select the right associated action to an observation.
      * 
@@ -71,16 +74,24 @@ public class Agent {
             return null;
         }
 
-        Set<Formula> formulas = new HashSet<>();
+        Set<Formula> formulasElse = new HashSet<>();
+        Set<Formula> formulaIfElseIf = new HashSet<>();
         for (Map.Entry<Formula, Action> entry : this.conditions.entrySet()) {
+            System.out.println(entry.getKey() + " : " + entry.getValue());
             if (selectedAction.equals(entry.getValue())) {
-                formulas.add(entry.getKey());
-                break;
+                formulaIfElseIf.add(entry.getKey());
+                System.out.println("ici");
             } else {
-                formulas.add(new Not(entry.getKey()));
+                formulasElse.add(new Not(entry.getKey()));
+                System.out.println("ou ici");
             }
         }
-        return new Or(formulas).simplify();
+
+        if (formulaIfElseIf.size() == 0 || (formulaIfElseIf.size() == 1 && formulaIfElseIf.contains(null))) {
+            return new And(formulasElse).simplify();
+        }
+        // if the action selected is in multiple conditions value
+        return new Or(formulaIfElseIf).simplify();
     }
 
     /**
@@ -90,11 +101,14 @@ public class Agent {
      * @param objects     any number or type of object arguments to pass to action
      *                    performer
      * @return action return
+     * @throws Exception throws when receive illegal arguments, objects cannot be
+     *                   processed, etc.
+     *                   Thrown by the action when executing.
      * 
      * @see #getAssociatedAction(Observation)
      * @see Action#performs(Object...)
      */
-    public Object performsAssociatedAction(Observation observation, Object... objects) {
+    public Object performsAssociatedAction(Observation observation, Object... objects) throws Exception {
         return this.getAssociatedAction(observation).performs(objects);
     }
 
@@ -115,7 +129,7 @@ public class Agent {
     public boolean equals(Object other) {
         if (other instanceof Agent) {
             Agent agent = (Agent) other;
-            return agent.name.equals(this.name);
+            return agent.name.equals(this.name) && agent.conditions.equals(this.conditions);
         }
         return false;
     }
@@ -127,5 +141,14 @@ public class Agent {
      */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Gets the conditions for the agent.
+     * 
+     * @return conditions map
+     */
+    public Map<Formula, Action> getConditions() {
+        return this.conditions;
     }
 }

@@ -1,7 +1,7 @@
 package MAKBPInterpreter.logic;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +23,9 @@ public class And implements Formula {
     public And(Collection<Formula> operands) {
         this.operands = new HashSet<>();
         for (Formula operand : operands) {
+            if (operand == null) {
+                continue;
+            }
             this.operands.add(operand);
         }
     }
@@ -33,8 +36,7 @@ public class And implements Formula {
      * @param operands undifined number of operands
      */
     public And(Formula... operands) {
-        this.operands = new HashSet<>();
-        Collections.addAll(this.operands, operands);
+        this(Arrays.asList(operands));
     }
 
     @Override
@@ -82,6 +84,12 @@ public class And implements Formula {
 
     @Override
     public Formula simplify() {
+        if (this.operands.size() == 1) {
+            for (Formula operand : this.operands) {
+                return operand;
+            }
+        }
+
         Set<Formula> operands = new HashSet<>();
         for (Formula operand : this.operands) {
             if (operand instanceof And) {
@@ -126,11 +134,12 @@ public class And implements Formula {
 
     @Override
     public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
+        boolean result = true;
         for (Formula formula : this.operands) {
-            if (!formula.evaluate(state, objects)) {
-                return false;
-            }
+            System.out.println("  --> (And) " + formula + " : ");
+            System.out.println("  --> (And) " + formula + " : " + formula.evaluate(state, objects));
+            result = result && formula.evaluate(state, objects);
         }
-        return true;
+        return result;
     }
 }

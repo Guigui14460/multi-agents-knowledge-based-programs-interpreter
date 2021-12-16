@@ -47,6 +47,14 @@ public class KripkeWorld {
         this(KripkeWorld.id.toString(), assignment);
     }
 
+    /**
+     * Checks if a given formula is satisfying the actual state of the world.
+     * 
+     * @param formula   formula to satisfied
+     * @param structure Kripke structure
+     * @return boolean representing if the world satisfied the formula
+     * @throws Exception thrown if an illegal argument is passed
+     */
     public boolean satisfied(Formula formula, KripkeStructure structure) throws Exception {
         return formula.evaluate(this.assignment, this, structure);
     }

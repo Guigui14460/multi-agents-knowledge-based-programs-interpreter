@@ -33,13 +33,23 @@ public class CommonKnowledge implements Formula {
     }
 
     @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof CommonKnowledge)) {
+            return false;
+        }
+        CommonKnowledge otherCommonKnowledge = (CommonKnowledge) other;
+        return otherCommonKnowledge.agents.equals(this.agents)
+                && this.innerFormula.equals(otherCommonKnowledge.innerFormula);
+    }
+
+    @Override
     public Formula simplify() {
         return new CommonKnowledge(this.innerFormula.simplify(), this.agents);
     }
 
     @Override
     public Formula getNegation() {
-        return new Not(this);
+        return new Not(this).simplify();
     }
 
     @Override
@@ -75,13 +85,11 @@ public class CommonKnowledge implements Formula {
         KripkeWorld world = (KripkeWorld) objects[0];
         KripkeStructure structure = (KripkeStructure) objects[1];
         boolean result = true;
-        // we check if the worlds connected to the actual world satisfied the formula or
-        // not
-        // in other words, if it satisfied, it's because the world is a correct one for
-        // all agents
+        // (M, s) |= CK_J(phi) iff forall t, (M,t) |= phi, (s,t) e (forall i e J,
+        // K_i(s))
         for (Agent agent : this.agents) {
             for (KripkeWorld otherWorld : structure.getWorldFromOtherWorldAndAgent(world, agent)) {
-                result &= this.innerFormula.evaluate(otherWorld.getAssignment(), objects);
+                result = result && otherWorld.satisfied(this.innerFormula, structure);
             }
         }
         return result;

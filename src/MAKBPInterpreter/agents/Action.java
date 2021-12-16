@@ -9,6 +9,8 @@ public interface Action {
      * 
      * @param objects any number or type of object arguments
      * @return result object
+     * @throws Exception throws when receive illegal arguments, objects cannot be
+     *                   processed, etc
      */
-    public Object performs(Object... objects);
+    public Object performs(Object... objects) throws Exception;
 }

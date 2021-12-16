@@ -1,7 +1,7 @@
 package MAKBPInterpreter.logic;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +23,9 @@ public class Or implements Formula {
     public Or(Collection<Formula> operands) {
         this.operands = new HashSet<>();
         for (Formula operand : operands) {
+            if (operand == null) {
+                continue;
+            }
             this.operands.add(operand);
         }
     }
@@ -31,10 +34,10 @@ public class Or implements Formula {
      * Constructor with operands array.
      * 
      * @param operands undifined number of operands
+     * @see #Or(Collection)
      */
     public Or(Formula... operands) {
-        this.operands = new HashSet<>();
-        Collections.addAll(this.operands, operands);
+        this(Arrays.asList(operands));
     }
 
     @Override
@@ -82,6 +85,12 @@ public class Or implements Formula {
 
     @Override
     public Formula simplify() {
+        if (this.operands.size() == 1) {
+            for (Formula operand : this.operands) {
+                return operand;
+            }
+        }
+
         Set<Formula> operands = new HashSet<>();
         for (Formula operand : this.operands) {
             if (operand instanceof Or) {
@@ -126,11 +135,10 @@ public class Or implements Formula {
 
     @Override
     public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
+        boolean result = false;
         for (Formula formula : this.operands) {
-            if (formula.evaluate(state, objects)) {
-                return true;
-            }
+            result = result || formula.evaluate(state, objects);
         }
-        return false;
+        return result;
     }
 }

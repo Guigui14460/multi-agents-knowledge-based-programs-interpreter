@@ -38,6 +38,10 @@ public class Not implements Formula {
 
     @Override
     public Formula simplify() {
+        if (this.operand == null) {
+            return null;
+        }
+
         if (this.operand.getClass().equals(this.getClass())) {
             Not subformula = (Not) this.operand;
             return subformula.operand.simplify();

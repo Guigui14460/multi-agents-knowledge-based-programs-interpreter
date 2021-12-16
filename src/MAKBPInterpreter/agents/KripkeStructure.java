@@ -15,7 +15,7 @@ public class KripkeStructure {
     /**
      * The memory and knowledge data structure.
      */
-    private Map<KripkeWorld, Map<KripkeWorld, Agent>> graph;
+    private Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph;
 
     /**
      * Collection of agents representing all the current agents in the environment.
@@ -31,17 +31,17 @@ public class KripkeStructure {
      *                              {@link #addReflexiveArcs(Map, Collection)}
      *                              mathod
      * @param symetricArcsIncluded  if {@code false}, we call the
-     *                              {@link #addSymetricArcs(Map)} method
+     *                              {@link #addSymetricArcs(Map, Collection)} method
      */
-    public KripkeStructure(Map<KripkeWorld, Map<KripkeWorld, Agent>> graph, Collection<Agent> agents,
+    public KripkeStructure(Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph, Collection<Agent> agents,
             boolean reflexiveArcsIncluded, boolean symetricArcsIncluded) {
-        this.agents = agents;
         if (!symetricArcsIncluded) {
-            graph = this.addSymetricArcs(graph);
+            graph = this.addSymetricArcs(graph, agents);
         }
         if (!reflexiveArcsIncluded) {
             graph = this.addReflexiveArcs(graph, agents);
         }
+        this.agents = agents;
         this.graph = graph;
     }
 
@@ -55,8 +55,28 @@ public class KripkeStructure {
      * @param graph  graph to assigned to the structure
      * @param agents list of agents to assigned to the structure
      */
-    public KripkeStructure(Map<KripkeWorld, Map<KripkeWorld, Agent>> graph, Collection<Agent> agents) {
+    public KripkeStructure(Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph, Collection<Agent> agents) {
         this(graph, agents, false, false);
+    }
+
+    /**
+     * Initializes an empty graph with all worlds and agents as keys.
+     * 
+     * @param worlds all worlds of the structure
+     * @param agents all agents in the structure
+     * @return an initialized graph
+     */
+    private Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> initializeGraph(Collection<KripkeWorld> worlds,
+            Collection<Agent> agents) {
+        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
+        for (KripkeWorld world : worlds) {
+            Map<Agent, Set<KripkeWorld>> map = new HashMap<>();
+            for (Agent agent : agents) {
+                map.put(agent, new HashSet<>());
+            }
+            graph.put(world, map);
+        }
+        return graph;
     }
 
     /**
@@ -64,26 +84,29 @@ public class KripkeStructure {
      * 
      * A copy is realized so the {@code graph} object is not modified.
      * 
-     * @param graph current graph knowledge
+     * @param graph  current graph knowledge
+     * @param agents collection of agents
      * @return the modified copy of {@code graph}
      */
-    public Map<KripkeWorld, Map<KripkeWorld, Agent>> addReflexiveArcs(Map<KripkeWorld, Map<KripkeWorld, Agent>> graph,
+    public Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> addReflexiveArcs(
+            Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph,
             Collection<Agent> agents) {
-        Map<KripkeWorld, Map<KripkeWorld, Agent>> graph2 = new HashMap<>();
+        // initialization
+        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph2 = this.initializeGraph(graph.keySet(), agents);
+
         for (KripkeWorld key : graph.keySet()) {
-            Map<KripkeWorld, Agent> linkGraph1 = graph.get(key);
-            Map<KripkeWorld, Agent> linkGraph2 = new HashMap<>();
-            graph2.put(key, linkGraph2);
+            Map<Agent, Set<KripkeWorld>> linkGraph1 = graph.get(key);
+            Map<Agent, Set<KripkeWorld>> linkGraph2 = graph2.get(key);
 
             // copy
-            for (KripkeWorld key2 : linkGraph1.keySet()) {
-                Agent value = linkGraph1.get(key2);
-                linkGraph2.put(key2, value);
+            for (Agent key2 : linkGraph1.keySet()) {
+                Set<KripkeWorld> value = linkGraph1.get(key2);
+                linkGraph2.get(key2).addAll(value);
             }
 
             // add reflexive arcs
-            for (Agent agent : agents) {
-                linkGraph2.put(key, agent);
+            for (Agent agent : linkGraph2.keySet()) {
+                graph2.get(key).get(agent).add(key);
             }
         }
         return graph2;
@@ -94,26 +117,30 @@ public class KripkeStructure {
      * 
      * A copy is realized so the {@code graph} object is not modified.
      * 
-     * @param graph current graph knowledge
+     * @param graph  current graph knowledge
+     * @param agents collection of agents
      * @return the modified copy of {@code graph}
      */
-    public Map<KripkeWorld, Map<KripkeWorld, Agent>> addSymetricArcs(Map<KripkeWorld, Map<KripkeWorld, Agent>> graph) {
-        Map<KripkeWorld, Map<KripkeWorld, Agent>> graph2 = new HashMap<>();
-        for (KripkeWorld key : graph.keySet()) {
-            if (!graph2.containsKey(key)) {
-                graph2.put(key, new HashMap<>());
-            }
-            Map<KripkeWorld, Agent> linkGraph1 = graph.get(key);
-            Map<KripkeWorld, Agent> linkGraph2 = new HashMap<>();
-            graph2.put(key, linkGraph2);
+    public Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> addSymetricArcs(
+            Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph, Collection<Agent> agents) {
+        // initialization
+        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph2 = this.initializeGraph(graph.keySet(), agents);
 
-            for (KripkeWorld key2 : linkGraph1.keySet()) {
-                Agent value = linkGraph1.get(key2); // link where in graph
-                linkGraph2.put(key2, value);
-                if (!graph2.containsKey(key)) {
-                    graph2.put(key2, new HashMap<>());
+        for (KripkeWorld key : graph.keySet()) {
+            Map<Agent, Set<KripkeWorld>> linkGraph1 = graph.get(key);
+            Map<Agent, Set<KripkeWorld>> linkGraph2 = graph2.get(key);
+
+            // copy
+            for (Agent key2 : linkGraph1.keySet()) {
+                Set<KripkeWorld> value = linkGraph1.get(key2);
+                linkGraph2.get(key2).addAll(value);
+            }
+
+            // add symetric arcs
+            for (Agent agent : linkGraph2.keySet()) {
+                for (KripkeWorld world : linkGraph2.getOrDefault(agent, new HashSet<>())) {
+                    graph2.get(world).get(agent).add(key);
                 }
-                graph2.get(key2).put(key, value); // add symetric
             }
         }
         return graph2;
@@ -126,23 +153,30 @@ public class KripkeStructure {
      * @throws Exception
      */
     public void publicAnnouncement(Formula formula) throws Exception {
-        // we check the world that not satisfied the formula
+        // we check worlds that not satisfied the formula
         Set<KripkeWorld> worldsToRemove = new HashSet<>();
         for (KripkeWorld world : this.graph.keySet()) {
+            System.out.println("--> (World) " + world + " : ");
+            System.out.println("--> (World) " + world + " : " + world.satisfied(formula, this));
             if (!world.satisfied(formula, this)) {
                 worldsToRemove.add(world);
             }
         }
 
-        // we remove the worlds in the graph
+        // we remove worlds from the graph
         for (KripkeWorld world : worldsToRemove) {
-            graph.remove(world);
+            this.graph.remove(world);
             for (KripkeWorld key : this.graph.keySet()) {
-                if (this.graph.get(key).containsKey(world)) {
-                    this.graph.get(key).remove(world);
+                for (Agent agent : this.graph.get(key).keySet()) {
+                    if (this.graph.get(key).get(agent).contains(world)) {
+                        this.graph.get(key).get(agent).remove(world);
+                    }
                 }
             }
         }
+
+        System.out.println(worldsToRemove);
+        System.out.println(this.graph.keySet());
     }
 
     @Override
@@ -158,6 +192,11 @@ public class KripkeStructure {
     public boolean equals(Object other) {
         if (other instanceof KripkeStructure) {
             KripkeStructure structure = (KripkeStructure) other;
+
+            if (!this.agents.equals(structure.agents)) {
+                return false;
+            }
+
             // different size
             if (structure.graph.size() != this.graph.size()) {
                 return false;
@@ -168,11 +207,11 @@ public class KripkeStructure {
                 if (!structure.graph.containsKey(key)) {
                     return false;
                 }
-                for (KripkeWorld key2 : this.graph.get(key).keySet()) {
+                for (Agent key2 : this.graph.get(key).keySet()) {
                     if (!structure.graph.get(key).containsKey(key2)) {
                         return false;
                     }
-                    if (structure.graph.get(key).get(key2) != this.graph.get(key).get(key2)) {
+                    if (!structure.graph.get(key).get(key2).equals(this.graph.get(key).get(key2))) {
                         return false;
                     }
                 }
@@ -194,12 +233,24 @@ public class KripkeStructure {
      * @return a set of worlds
      */
     public Set<KripkeWorld> getWorldFromOtherWorldAndAgent(KripkeWorld world, Agent agent) {
-        Set<KripkeWorld> set = new HashSet<>();
-        for (Map.Entry<KripkeWorld, Agent> entry : this.graph.getOrDefault(world, new HashMap<>()).entrySet()) {
-            if (entry.getValue().equals(agent)) {
-                set.add(entry.getKey());
-            }
-        }
-        return set;
+        return this.graph.get(world).get(agent);
+    }
+
+    /**
+     * Gets the graph used by the structure.
+     * 
+     * @return raisonning graph
+     */
+    public Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> getGraph() {
+        return this.graph;
+    }
+
+    /**
+     * Gets the collection of agents used by the structure.
+     * 
+     * @return collection of agents
+     */
+    public Collection<Agent> getAgents() {
+        return this.agents;
     }
 }
