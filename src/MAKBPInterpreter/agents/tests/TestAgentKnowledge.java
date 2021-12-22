@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import MAKBPInterpreter.agents.Agent;
 import MAKBPInterpreter.agents.AgentKnowledge;
+import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
 import MAKBPInterpreter.logic.Atom;
@@ -29,7 +30,7 @@ public class TestAgentKnowledge extends TestCase {
     @Test
     public void testConstructor() {
         Formula atom1 = new Atom("a is muddy");
-        Agent a = new Agent("a", new HashMap<>());
+        Agent a = new Agent("a", new AgentProgram());
 
         AgentKnowledge Ka = new AgentKnowledge(a, atom1);
 
@@ -42,7 +43,7 @@ public class TestAgentKnowledge extends TestCase {
      */
     @Test
     public void testGetters() {
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Formula formula = new Atom("a is muddy");
         AgentKnowledge Ka = new AgentKnowledge(agent, formula);
 
@@ -55,7 +56,7 @@ public class TestAgentKnowledge extends TestCase {
      */
     @Test
     public void testSimplify() {
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Formula formula = new Not(new Not(new Atom("a is muddy")));
         AgentKnowledge Ka = new AgentKnowledge(agent, formula);
         AgentKnowledge Ka_expected = new AgentKnowledge(agent, new Atom("a is muddy"));
@@ -70,7 +71,7 @@ public class TestAgentKnowledge extends TestCase {
      */
     @Test
     public void testGetNegation() {
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Formula formula = new Not(new Atom("a is muddy"));
         Formula Ka = new AgentKnowledge(agent, formula);
         Formula Ka_expected1 = new Not(new AgentKnowledge(agent, formula));
@@ -91,7 +92,7 @@ public class TestAgentKnowledge extends TestCase {
      */
     @Test
     public void testEquals() {
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Formula formula = new Atom("a is muddy");
         AgentKnowledge Ka1 = new AgentKnowledge(agent, formula);
         AgentKnowledge Ka2 = new AgentKnowledge(agent, new Not(formula));
@@ -108,7 +109,7 @@ public class TestAgentKnowledge extends TestCase {
      */
     @Test
     public void testContains() {
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Formula one = new Atom("a is muddy");
         Formula two = new Not(one);
         Formula three = new Atom("b is muddy");
@@ -127,7 +128,7 @@ public class TestAgentKnowledge extends TestCase {
     public void testEvaluate() {
         Atom atom1 = new Atom("1");
         Atom atom2 = new Atom("2");
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         AgentKnowledge Ka = new AgentKnowledge(agent, atom1);
         AgentKnowledge Ka2 = new AgentKnowledge(agent, new Not(atom2));
 

@@ -2,13 +2,11 @@ package MAKBPInterpreter.agents.tests;
 
 import static org.junit.Assert.assertThrows;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Test;
 
 import MAKBPInterpreter.agents.Action;
 import MAKBPInterpreter.agents.Agent;
+import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.Observation;
 import MAKBPInterpreter.logic.And;
 import MAKBPInterpreter.logic.Atom;
@@ -36,12 +34,13 @@ public class TestAgent extends TestCase {
     };
 
     /**
-     * Tests the {@link MAKBPInterpreter.agents.Agent#Agent(String, java.util.Map)}
+     * Tests the
+     * {@link MAKBPInterpreter.agents.Agent#Agent(String, MAKBPInterpreter.agents.AgentProgram)}
      * constructor.
      */
     @Test
     public void testConstructor() {
-        Agent agent = new Agent("agent 1", new HashMap<>());
+        Agent agent = new Agent("agent 1", new AgentProgram());
 
         assertNotNull("Must not be null", agent);
     }
@@ -52,24 +51,24 @@ public class TestAgent extends TestCase {
     @Test
     public void testGetName() {
         String name = "agent 1";
-        Agent agent = new Agent(name, new HashMap<>());
+        Agent agent = new Agent(name, new AgentProgram());
 
         assertEquals("Must be equal", name, agent.getName());
     }
 
     /**
-     * Tests the {@link MAKBPInterpreter.agents.Agent#getConditions()} method.
+     * Tests the {@link MAKBPInterpreter.agents.Agent#getProgram()} method.
      */
     @Test
     public void testGetConditions() {
         String name = "agent 1";
-        Map<Formula, Action> conditions = new HashMap<>();
+        AgentProgram program = new AgentProgram();
         Formula formula1 = new Atom("1 is muddy");
-        conditions.put(formula1, action1);
-        conditions.put(null, action2);
-        Agent agent = new Agent(name, conditions);
+        program.put(formula1, action1);
+        program.put(null, action2);
+        Agent agent = new Agent(name, program);
 
-        assertEquals("Must be equal", conditions, agent.getConditions());
+        assertEquals("Must be equal", program, agent.getProgram());
     }
 
     /**
@@ -79,18 +78,18 @@ public class TestAgent extends TestCase {
     public void testEquals() {
         String name = "agent 1";
         String name2 = "agent 2";
-        Map<Formula, Action> conditions = new HashMap<>();
+        AgentProgram program = new AgentProgram();
         Formula formula1 = new Atom("1 is muddy");
-        conditions.put(formula1, action1);
-        conditions.put(null, action2);
-        Map<Formula, Action> conditionsCopy = new HashMap<>(conditions);
-        Map<Formula, Action> conditions2 = new HashMap<>(conditions);
+        program.put(formula1, action1);
+        program.put(null, action2);
+        AgentProgram programCopy = new AgentProgram(program);
+        AgentProgram program2 = new AgentProgram(program);
         Formula formula2 = new Atom("1 is muddy");
-        conditions2.put(formula2, action1);
-        Agent agent1 = new Agent(name, conditions);
-        Agent agent2 = new Agent(name, conditionsCopy);
-        Agent agent3 = new Agent(name2, conditionsCopy);
-        Agent agent4 = new Agent(name2, conditions2);
+        program2.put(formula2, action2);
+        Agent agent1 = new Agent(name, program);
+        Agent agent2 = new Agent(name, programCopy);
+        Agent agent3 = new Agent(name2, programCopy);
+        Agent agent4 = new Agent(name2, program2);
 
         assertTrue("Must be equals", agent1.equals(agent2));
         assertFalse("Must not be equals", agent1.equals(agent3));
@@ -108,11 +107,11 @@ public class TestAgent extends TestCase {
     @Test
     public void testGetAssociatedAction() {
         String name = "agent 1";
-        Map<Formula, Action> conditions = new HashMap<>();
+        AgentProgram program = new AgentProgram();
         Formula formula1 = new Atom("1 is muddy");
-        conditions.put(formula1, action1);
-        conditions.put(null, action2);
-        Agent agent = new Agent(name, conditions);
+        program.put(formula1, action1);
+        program.put(null, action2);
+        Agent agent = new Agent(name, program);
 
         Observation observation1 = new Observation(formula1);
         assertEquals("Selected action is not correct", action1, agent.getAssociatedAction(observation1));
@@ -129,10 +128,10 @@ public class TestAgent extends TestCase {
     @Test
     public void testPerformsAssociatedAction() {
         String name = "agent 1";
-        Map<Formula, Action> conditions = new HashMap<>();
+        AgentProgram program = new AgentProgram();
         Formula formula1 = new Atom("1 is muddy");
-        conditions.put(formula1, action2);
-        Agent agent = new Agent(name, conditions);
+        program.put(formula1, action2);
+        Agent agent = new Agent(name, program);
 
         Observation observation1 = new Observation(formula1);
         assertEquals(0, action2.getAcc());
@@ -156,11 +155,11 @@ public class TestAgent extends TestCase {
     @Test
     public void testPerformsAssociatedActionNullAction() {
         String name = "agent 1";
-        Map<Formula, Action> conditions = new HashMap<>();
+        AgentProgram program = new AgentProgram();
         Formula formula1 = new Atom("1 is muddy");
         Formula formula2 = new Not(formula1);
-        conditions.put(formula1, action2);
-        Agent agent = new Agent(name, conditions);
+        program.put(formula1, action2);
+        Agent agent = new Agent(name, program);
 
         Observation observation1 = new Observation(formula2);
         assertThrows(NullPointerException.class, () -> agent.performsAssociatedAction(observation1, 10, 20));
@@ -179,9 +178,9 @@ public class TestAgent extends TestCase {
         Formula formula2 = new Not(formula1);
         Formula formula3 = new Atom("2 is muddy");
 
-        Map<Formula, Action> conditions = new HashMap<>();
-        conditions.put(formula2, action2);
-        Agent agent = new Agent(name, conditions);
+        AgentProgram program = new AgentProgram();
+        program.put(formula2, action2);
+        Agent agent = new Agent(name, program);
 
         Observation observation1 = new Observation(formula2);
         assertEquals("Observation must be retrieved", formula2, agent.reverseEngineering(action2));
@@ -189,11 +188,11 @@ public class TestAgent extends TestCase {
         agent.getAssociatedAction(observation1);
         assertEquals("Observation must be retrieved", formula2, agent.reverseEngineering());
 
-        Map<Formula, Action> conditions2 = new HashMap<>(conditions);
-        conditions2.put(formula1, action2);
-        conditions2.put(formula3, action1);
-        conditions2.put(null, action3);
-        Agent agent2 = new Agent(name + "0", conditions2);
+        AgentProgram program2 = new AgentProgram(program);
+        program2.put(formula1, action2);
+        program2.put(formula3, action1);
+        program2.put(null, action3);
+        Agent agent2 = new Agent(name + "0", program2);
 
         assertNull(agent.reverseEngineering(null));
         assertEquals(new And(new Not(formula2), new Not(formula1), new Not(formula3)).simplify(),

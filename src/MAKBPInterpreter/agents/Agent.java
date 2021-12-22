@@ -18,14 +18,12 @@ public class Agent {
      */
     private String name;
 
-    // TODO: may be modify to two ordered lists (one for key and one for value with
-    // the same exact size)
     /**
-     * Conditions used to select the right associated action to an observation.
+     * Program used to select the right associated action to an observation.
      * 
      * If a null formula is provided, the agent deduce that is the else case.
      */
-    private Map<Formula, Action> conditions;
+    private AgentProgram program;
 
     /**
      * Last selected action linked to the last seen observation.
@@ -35,13 +33,13 @@ public class Agent {
     /**
      * Constructor.
      * 
-     * @param name       agent name
-     * @param conditions used to select the right associated action to an
-     *                   observation
+     * @param name    agent name
+     * @param program used to select the right associated action to an
+     *                observation
      */
-    public Agent(String name, Map<Formula, Action> conditions) {
+    public Agent(String name, AgentProgram program) {
         this.name = name;
-        this.conditions = conditions;
+        this.program = program;
     }
 
     /**
@@ -51,12 +49,12 @@ public class Agent {
      * @return associated action
      */
     public Action getAssociatedAction(Observation observation) {
-        if (this.conditions.containsKey(observation.getFormula())) {
-            this.lastSelectedAction = this.conditions.get(observation.getFormula());
+        if (this.program.containsKey(observation.getFormula())) {
+            this.lastSelectedAction = this.program.get(observation.getFormula());
             return this.lastSelectedAction;
         }
-        if (this.conditions.containsKey(null)) {
-            this.lastSelectedAction = this.conditions.get(null);
+        if (this.program.containsKey(null)) {
+            this.lastSelectedAction = this.program.get(null);
             return this.lastSelectedAction;
         }
         return null;
@@ -76,21 +74,18 @@ public class Agent {
 
         Set<Formula> formulasElse = new HashSet<>();
         Set<Formula> formulaIfElseIf = new HashSet<>();
-        for (Map.Entry<Formula, Action> entry : this.conditions.entrySet()) {
-            System.out.println(entry.getKey() + " : " + entry.getValue());
+        for (Map.Entry<Formula, Action> entry : this.program.entrySet()) {
             if (selectedAction.equals(entry.getValue())) {
                 formulaIfElseIf.add(entry.getKey());
-                System.out.println("ici");
             } else {
                 formulasElse.add(new Not(entry.getKey()));
-                System.out.println("ou ici");
             }
         }
 
         if (formulaIfElseIf.size() == 0 || (formulaIfElseIf.size() == 1 && formulaIfElseIf.contains(null))) {
             return new And(formulasElse).simplify();
         }
-        // if the action selected is in multiple conditions value
+        // if the action selected is in multiple program value
         return new Or(formulaIfElseIf).simplify();
     }
 
@@ -129,7 +124,7 @@ public class Agent {
     public boolean equals(Object other) {
         if (other instanceof Agent) {
             Agent agent = (Agent) other;
-            return agent.name.equals(this.name) && agent.conditions.equals(this.conditions);
+            return agent.name.equals(this.name) && agent.program.equals(this.program);
         }
         return false;
     }
@@ -144,11 +139,11 @@ public class Agent {
     }
 
     /**
-     * Gets the conditions for the agent.
+     * Gets the program for the agent.
      * 
-     * @return conditions map
+     * @return agent program
      */
-    public Map<Formula, Action> getConditions() {
-        return this.conditions;
+    public AgentProgram getProgram() {
+        return this.program;
     }
 }

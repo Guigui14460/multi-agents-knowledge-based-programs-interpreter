@@ -11,6 +11,7 @@ import java.util.Set;
 import MAKBPInterpreter.agents.Action;
 import MAKBPInterpreter.agents.Agent;
 import MAKBPInterpreter.agents.AgentKnowledge;
+import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
 import MAKBPInterpreter.logic.And;
@@ -51,12 +52,12 @@ public class MuddyChildrenProblem {
         List<Agent> agents = new ArrayList<>();
         List<Atom> atoms = new ArrayList<>();
         for (Integer i = 1; i < 4; i++) {
-            Map<Formula, Action> conditions = new HashMap<>();
-            Agent agent = new Agent(i.toString(), conditions);
+            AgentProgram program = new AgentProgram();
+            Agent agent = new Agent(i.toString(), program);
             Atom atom = new Atom(i.toString() + "_propre");
             atoms.add(atom);
-            conditions.put(new AgentKnowledge(agent, new Not(atom)), denounceItself);
-            conditions.put(null, beQuiet);
+            program.put(new AgentKnowledge(agent, new Not(atom)), denounceItself);
+            program.put(null, beQuiet);
             agents.add(agent);
         }
 
@@ -221,7 +222,7 @@ public class MuddyChildrenProblem {
             System.out.println("------------- After second deduction call -------------");
             System.out.println(structure);
             System.out.println("----------- End After second deduction call -----------\n");
-            // TODO: fix because we already have the final structure
+            // TODO: to fix because we have the wrong worlds
         } catch (Exception e) {
             e.printStackTrace();
         }

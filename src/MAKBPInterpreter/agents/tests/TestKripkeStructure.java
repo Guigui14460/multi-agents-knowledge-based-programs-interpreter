@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import MAKBPInterpreter.agents.Agent;
 import MAKBPInterpreter.agents.AgentKnowledge;
+import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
 import MAKBPInterpreter.logic.And;
@@ -48,7 +49,7 @@ public class TestKripkeStructure extends TestCase {
      */
     @Test
     public void testGetters() {
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Collection<Agent> agents = new HashSet<>(Arrays.asList(agent));
         KripkeWorld world = new KripkeWorld(new HashMap<>());
         Map<Agent, Set<KripkeWorld>> map = new HashMap<>();
@@ -68,9 +69,9 @@ public class TestKripkeStructure extends TestCase {
      */
     @Test
     public void testEquals() {
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Collection<Agent> agents = new HashSet<>(Arrays.asList(agent));
-        Collection<Agent> agents2 = new HashSet<>(Arrays.asList(agent, new Agent("a", new HashMap<>())));
+        Collection<Agent> agents2 = new HashSet<>(Arrays.asList(agent, new Agent("a", new AgentProgram())));
         KripkeWorld world = new KripkeWorld(new HashMap<>());
         Map<Agent, Set<KripkeWorld>> map = new HashMap<>();
         map.put(agent, new HashSet<>(Arrays.asList(world)));
@@ -97,7 +98,7 @@ public class TestKripkeStructure extends TestCase {
      */
     @Test
     public void testAddReflexiveArcs() {
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Collection<Agent> agents = new HashSet<>(Arrays.asList(agent));
         KripkeWorld world1 = new KripkeWorld(new HashMap<>());
         KripkeWorld world2 = new KripkeWorld(new HashMap<>());
@@ -128,7 +129,7 @@ public class TestKripkeStructure extends TestCase {
      */
     @Test
     public void testAddSymetricArcs() {
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Collection<Agent> agents = new HashSet<>(Arrays.asList(agent));
         KripkeWorld world1 = new KripkeWorld(new HashMap<>());
         KripkeWorld world2 = new KripkeWorld(new HashMap<>());
@@ -159,8 +160,8 @@ public class TestKripkeStructure extends TestCase {
      */
     @Test
     public void testGetWorldFromOtherWorldAndAgent() {
-        Agent agent = new Agent("a", new HashMap<>());
-        Agent agent2 = new Agent("b", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
+        Agent agent2 = new Agent("b", new AgentProgram());
         Collection<Agent> agents = new HashSet<>(Arrays.asList(agent, agent2));
         KripkeWorld world1 = new KripkeWorld(new HashMap<>());
         KripkeWorld world2 = new KripkeWorld(new HashMap<>());
@@ -199,7 +200,7 @@ public class TestKripkeStructure extends TestCase {
         KripkeStructure structure;
         Atom atom1 = new Atom("1");
         Atom atom2 = new Atom("2");
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Formula Ka = new AgentKnowledge(agent, atom1);
         Formula Ka2 = new Not(new AgentKnowledge(agent, atom1));
 

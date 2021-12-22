@@ -9,6 +9,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import MAKBPInterpreter.agents.Agent;
+import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
 import MAKBPInterpreter.logic.And;
@@ -102,7 +103,7 @@ public class TestKripkeWorld extends TestCase {
         assignment2.put(atom1, false);
         KripkeWorld world2 = new KripkeWorld("test2", assignment2);
 
-        Agent agent = new Agent("a", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
         Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
         Map<Agent, Set<KripkeWorld>> map1 = new HashMap<>();
         map1.put(agent, new HashSet<>(Arrays.asList(world1, world2)));

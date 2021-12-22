@@ -9,6 +9,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import MAKBPInterpreter.agents.Agent;
+import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.CommonKnowledge;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
@@ -29,7 +30,7 @@ public class TestCommonKnowledge extends TestCase {
     @Test
     public void testConstructor() {
         Formula atom1 = new Atom("a is muddy");
-        Agent a = new Agent("a", new HashMap<>());
+        Agent a = new Agent("a", new AgentProgram());
 
         CommonKnowledge CK = new CommonKnowledge(atom1, new HashSet<>(Arrays.asList(a)));
 
@@ -42,8 +43,8 @@ public class TestCommonKnowledge extends TestCase {
      */
     @Test
     public void testGetters() {
-        Agent agent = new Agent("a", new HashMap<>());
-        Agent agent2 = new Agent("b", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
+        Agent agent2 = new Agent("b", new AgentProgram());
         Formula formula = new Atom("a is muddy");
         CommonKnowledge CK = new CommonKnowledge(formula, new HashSet<>(Arrays.asList(agent, agent2)));
 
@@ -56,8 +57,8 @@ public class TestCommonKnowledge extends TestCase {
      */
     @Test
     public void testSimplify() {
-        Agent agent = new Agent("a", new HashMap<>());
-        Agent agent2 = new Agent("b", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
+        Agent agent2 = new Agent("b", new AgentProgram());
         Formula formula = new Not(new Not(new Atom("a is muddy")));
         CommonKnowledge CK = new CommonKnowledge(formula, new HashSet<>(Arrays.asList(agent, agent2)));
         CommonKnowledge CK_expected = new CommonKnowledge(new Atom("a is muddy"),
@@ -73,8 +74,8 @@ public class TestCommonKnowledge extends TestCase {
      */
     @Test
     public void testGetNegation() {
-        Agent agent = new Agent("a", new HashMap<>());
-        Agent agent2 = new Agent("b", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
+        Agent agent2 = new Agent("b", new AgentProgram());
         Formula formula = new Not(new Atom("a is muddy"));
         Formula CK = new CommonKnowledge(formula, new HashSet<>(Arrays.asList(agent, agent2)));
         Formula CK_expected1 = new Not(new CommonKnowledge(formula, new HashSet<>(Arrays.asList(agent, agent2))));
@@ -95,8 +96,8 @@ public class TestCommonKnowledge extends TestCase {
      */
     @Test
     public void testEquals() {
-        Agent agent = new Agent("a", new HashMap<>());
-        Agent agent2 = new Agent("b", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
+        Agent agent2 = new Agent("b", new AgentProgram());
         Formula formula = new Atom("a is muddy");
         CommonKnowledge CK1 = new CommonKnowledge(formula, new HashSet<>(Arrays.asList(agent, agent2)));
         CommonKnowledge CK2 = new CommonKnowledge(new Not(formula), new HashSet<>(Arrays.asList(agent, agent2)));
@@ -115,8 +116,8 @@ public class TestCommonKnowledge extends TestCase {
      */
     @Test
     public void testContains() {
-        Agent agent = new Agent("a", new HashMap<>());
-        Agent agent2 = new Agent("b", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
+        Agent agent2 = new Agent("b", new AgentProgram());
         Formula one = new Atom("a is muddy");
         Formula two = new Not(one);
         Formula three = new Atom("b is muddy");
@@ -135,8 +136,8 @@ public class TestCommonKnowledge extends TestCase {
     public void testEvaluate() {
         Atom atom1 = new Atom("1");
         Atom atom2 = new Atom("2");
-        Agent agent = new Agent("a", new HashMap<>());
-        Agent agent2 = new Agent("b", new HashMap<>());
+        Agent agent = new Agent("a", new AgentProgram());
+        Agent agent2 = new Agent("b", new AgentProgram());
 
         Map<Atom, Boolean> assignment = new HashMap<>();
         assignment.put(atom1, true);
