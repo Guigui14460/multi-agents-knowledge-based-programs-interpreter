@@ -14,7 +14,7 @@ import MAKBPInterpreter.logic.Formula;
  * Class representing an ordered map specifically implemented to handle agent
  * program.
  */
-public class AgentProgram implements Map<Formula, Action> {
+final public class AgentProgram implements Map<Formula, Action> {
     /**
      * List of ordered keys.
      */

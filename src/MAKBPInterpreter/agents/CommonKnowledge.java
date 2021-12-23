@@ -14,12 +14,12 @@ public class CommonKnowledge implements Formula {
     /**
      * Agent set where each agent knows the associated formula.
      */
-    private Set<Agent> agents;
+    protected Set<Agent> agents;
 
     /**
      * Common formula knows by all the agents.
      */
-    private Formula innerFormula;
+    protected Formula innerFormula;
 
     /**
      * Default constructor.

@@ -9,12 +9,12 @@ public class Equivalence implements Formula {
     /**
      * Represents the condition.
      */
-    Formula leftOperand;
+    private Formula leftOperand;
 
     /**
      * Represents the new statement.
      */
-    Formula rightOperand;
+    private Formula rightOperand;
 
     /**
      * Constructor.

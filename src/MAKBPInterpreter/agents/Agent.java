@@ -16,19 +16,19 @@ public class Agent {
     /**
      * Agent name.
      */
-    private String name;
+    protected String name;
 
     /**
      * Program used to select the right associated action to an observation.
      * 
      * If a null formula is provided, the agent deduce that is the else case.
      */
-    private AgentProgram program;
+    protected AgentProgram program;
 
     /**
      * Last selected action linked to the last seen observation.
      */
-    private Action lastSelectedAction = null;
+    protected Action lastSelectedAction = null;
 
     /**
      * Constructor.

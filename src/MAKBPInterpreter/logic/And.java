@@ -137,7 +137,7 @@ public class And implements Formula {
         boolean result = true;
         for (Formula formula : this.operands) {
             System.out.println("  --> (And) " + formula + " : ");
-            System.out.println("  --> (And) " + formula + " : " + formula.evaluate(state, objects));
+            System.out.println("  Result for " + formula + " : " + formula.evaluate(state, objects));
             result = result && formula.evaluate(state, objects);
         }
         return result;

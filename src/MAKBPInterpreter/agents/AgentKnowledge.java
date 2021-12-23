@@ -13,12 +13,12 @@ public class AgentKnowledge implements Formula {
     /**
      * Inner formula.
      */
-    private Formula innerFormula;
+    protected Formula innerFormula;
 
     /**
      * Associated agent.
      */
-    private Agent agent;
+    protected Agent agent;
 
     /**
      * Constructor.
@@ -92,7 +92,7 @@ public class AgentKnowledge implements Formula {
         KripkeWorld world = (KripkeWorld) objects[0];
         KripkeStructure structure = (KripkeStructure) objects[1];
 
-        // we check if the worlds connected to the actual world satisfied the formula or
+        // we check if all connected worlds to the actual world satisfied the formula or
         // not
         // in other words, if it satisfied, it's because the world is a correct one for
         // the agent
@@ -101,10 +101,10 @@ public class AgentKnowledge implements Formula {
         boolean result = true;
         for (KripkeWorld otherWorld : structure.getWorldFromOtherWorldAndAgent(world, agent)) {
             boolean res = otherWorld.satisfied(this.innerFormula, structure);
-            System.out.println(otherWorld.getName() + " : " + (res));
+            System.out.println("      " + otherWorld.getName() + " : " + (res));
             result = result && res;
         }
-        System.out.println("Result for " + this + " : " + result);
+        System.out.println("    Result for " + this + " : " + result);
         return result;
     }
 }

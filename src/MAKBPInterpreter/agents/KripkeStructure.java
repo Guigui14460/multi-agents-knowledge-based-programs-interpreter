@@ -66,7 +66,7 @@ public class KripkeStructure {
      * @param agents all agents in the structure
      * @return an initialized graph
      */
-    private Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> initializeGraph(Collection<KripkeWorld> worlds,
+    protected Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> initializeGraph(Collection<KripkeWorld> worlds,
             Collection<Agent> agents) {
         Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
         for (KripkeWorld world : worlds) {
@@ -157,7 +157,7 @@ public class KripkeStructure {
         Set<KripkeWorld> worldsToRemove = new HashSet<>();
         for (KripkeWorld world : this.graph.keySet()) {
             System.out.println("--> (World) " + world + " : ");
-            System.out.println("--> (World) " + world + " : " + world.satisfied(formula, this));
+            System.out.println("World result : " + world.satisfied(formula, this));
             if (!world.satisfied(formula, this)) {
                 worldsToRemove.add(world);
             }
