@@ -5,9 +5,23 @@ import java.util.Map;
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 
+/**
+ * Represents a knowledge that agent knows it true in a world.
+ */
 public class Box extends AgentKnowledge {
+    /**
+     * Constructor.
+     * 
+     * @param agent   agent who knows the {@code formula}
+     * @param formula formula known by the {@code agent}
+     */
     public Box(Agent agent, Formula formula) {
         super(agent, formula);
+    }
+
+    @Override
+    public Formula simplify() {
+        return new AgentKnowledge(this.agent, this.innerFormula.simplify());
     }
 
     @Override
