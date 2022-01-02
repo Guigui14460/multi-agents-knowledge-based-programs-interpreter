@@ -7,8 +7,9 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Problem to launch :");
         System.out.println("0. Muddy Children Problem (n=2, k=1)");
-        System.out.println("1. Muddy Children Problem (n=3, k=2)");
-        System.out.println("2. Muddy Children Problem (n=3, k=3)");
+        System.out.println("1. Muddy Children Problem (n=2, k=2)");
+        System.out.println("2. Muddy Children Problem (n=3, k=2)");
+        System.out.println("3. Muddy Children Problem (n=3, k=3)");
         System.out.println("-------------------------");
         System.out.println("Your choice :");
         String stringChoice = scanner.nextLine();
@@ -18,9 +19,12 @@ public class Main {
                 MuddyChildrenProblem.problemN2K1();
                 break;
             case 1:
-                MuddyChildrenProblem.problemN3K2();
+                MuddyChildrenProblem.problemN2K2();
                 break;
             case 2:
+                MuddyChildrenProblem.problemN3K2();
+                break;
+            case 3:
                 MuddyChildrenProblem.problemN3K3();
                 break;
 

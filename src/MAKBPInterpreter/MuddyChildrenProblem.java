@@ -12,7 +12,6 @@ import MAKBPInterpreter.agents.Action;
 import MAKBPInterpreter.agents.Agent;
 import MAKBPInterpreter.agents.AgentKnowledge;
 import MAKBPInterpreter.agents.AgentProgram;
-import MAKBPInterpreter.agents.Box;
 import MAKBPInterpreter.agents.Diamond;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
@@ -123,20 +122,12 @@ public class MuddyChildrenProblem {
         }
 
         KripkeStructure structure = new KripkeStructure(graph, agents, false, true);
-        System.out.println("------------------= Before any call ------------------=");
+        System.out.println("------------------- Before any call -------------------");
         System.out.println(structure);
         System.out.println(structure.getGraph());
         System.out.println("----------------- End Before any call -----------------");
         Formula motherFormula = new Or(new Not(atoms.get(0)), new Not(atoms.get(1)));
-        Formula knowledgeFormula = new And(
-                new AgentKnowledge(agents.get(0),
-                        new And(atoms.get(1),
-                                new Diamond(agents.get(0), new Not(atoms.get(0))),
-                                new Diamond(agents.get(1), new Not(atoms.get(1))))),
-                new AgentKnowledge(agents.get(1),
-                        new And(new Not(atoms.get(0)),
-                                new Diamond(agents.get(1), new Not(atoms.get(1))),
-                                new Diamond(agents.get(0), new Not(atoms.get(0))))));
+        Formula knowledgeFormula;
 
         try {
             System.out.println("======================== k = 1 ========================");
@@ -144,6 +135,124 @@ public class MuddyChildrenProblem {
             System.out.println("------------------ After first call -------------------");
             System.out.println(structure);
             System.out.println("---------------- End After first call -----------------\n");
+            // a knows b is clean and there is at least 1 muddy child so a knows he is muddy
+            // b knows a is muddy
+            knowledgeFormula = new And(
+                    new AgentKnowledge(agents.get(0),
+                            new And(atoms.get(1), new Not(new AgentKnowledge(agents.get(0), atoms.get(0))))),
+                    new AgentKnowledge(agents.get(1),
+                            new And(new Not(new AgentKnowledge(agents.get(1), atoms.get(1))))));
+            structure.publicAnnouncement(knowledgeFormula);
+            // b knows he is clean after a denouciate himself
+            System.out.println("---------- After first deduction first call -----------");
+            System.out.println(structure);
+            System.out.println("-------- End After first deduction first call ---------\n");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Real world ? (" + realWorld + ") "
+                + new HashSet<>(Arrays.asList(realWorld)).equals(structure.getWorlds()));
+    }
+
+    public static void problemN2K2() {
+        System.out.println("Muddy Children Problem (n=2, k=2)");
+
+        // create agents program
+        List<Agent> agents = new ArrayList<>();
+        List<Atom> atoms = new ArrayList<>();
+        for (Integer i = 1; i < 3; i++) {
+            AgentProgram program = new AgentProgram();
+            Agent agent = new Agent(i.toString(), program);
+            Atom atom = new Atom(i.toString() + "_propre");
+            atoms.add(atom);
+            program.put(new AgentKnowledge(agent, new Not(atom)), denounceItself);
+            program.put(null, beQuiet);
+            agents.add(agent);
+        }
+
+        // create graph
+        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
+        KripkeWorld realWorld;
+        {
+            // all are clean
+            Map<Atom, Boolean> assignmentWorld1 = new HashMap<>();
+            assignmentWorld1.put(atoms.get(0), true);
+            assignmentWorld1.put(atoms.get(1), true);
+            KripkeWorld world1 = new KripkeWorld(Integer.toString(1), assignmentWorld1);
+
+            // 2 is clean
+            Map<Atom, Boolean> assignmentWorld2 = new HashMap<>();
+            assignmentWorld2.put(atoms.get(0), false);
+            assignmentWorld2.put(atoms.get(1), true);
+            KripkeWorld world2 = new KripkeWorld(Integer.toString(2), assignmentWorld2);
+
+            // all are muddy
+            Map<Atom, Boolean> assignmentWorld3 = new HashMap<>();
+            assignmentWorld3.put(atoms.get(0), false);
+            assignmentWorld3.put(atoms.get(1), false);
+            KripkeWorld world3 = new KripkeWorld(Integer.toString(3), assignmentWorld3);
+
+            // 1 is clean
+            Map<Atom, Boolean> assignmentWorld4 = new HashMap<>();
+            assignmentWorld4.put(atoms.get(0), true);
+            assignmentWorld4.put(atoms.get(1), false);
+            KripkeWorld world4 = new KripkeWorld(Integer.toString(4), assignmentWorld4);
+
+            realWorld = world3;
+
+            {
+                // World 1
+                Map<Agent, Set<KripkeWorld>> links = new HashMap<>();
+                links.put(agents.get(0), new HashSet<KripkeWorld>(Arrays.asList(world2)));
+                links.put(agents.get(1), new HashSet<KripkeWorld>(Arrays.asList(world4)));
+                graph.put(world1, links);
+            }
+            {
+                // World 2
+                Map<Agent, Set<KripkeWorld>> links = new HashMap<>();
+                links.put(agents.get(0), new HashSet<KripkeWorld>(Arrays.asList(world1)));
+                links.put(agents.get(1), new HashSet<KripkeWorld>(Arrays.asList(world3)));
+                graph.put(world2, links);
+            }
+            {
+                // World 3
+                Map<Agent, Set<KripkeWorld>> links = new HashMap<>();
+                links.put(agents.get(0), new HashSet<KripkeWorld>(Arrays.asList(world4)));
+                links.put(agents.get(1), new HashSet<KripkeWorld>(Arrays.asList(world2)));
+                graph.put(world3, links);
+            }
+            {
+                // World 4
+                Map<Agent, Set<KripkeWorld>> links = new HashMap<>();
+                links.put(agents.get(0), new HashSet<KripkeWorld>(Arrays.asList(world3)));
+                links.put(agents.get(1), new HashSet<KripkeWorld>(Arrays.asList(world1)));
+                graph.put(world4, links);
+            }
+        }
+
+        KripkeStructure structure = new KripkeStructure(graph, agents, false, true);
+        System.out.println("------------------- Before any call -------------------");
+        System.out.println(structure);
+        System.out.println(structure.getGraph());
+        System.out.println("----------------- End Before any call -----------------");
+        Formula motherFormula = new Or(new Not(atoms.get(0)), new Not(atoms.get(1)));
+        Formula knowledgeFormula;
+
+        try {
+            System.out.println("======================== k = 1 ========================");
+            structure.publicAnnouncement(motherFormula);
+            System.out.println("------------------ After first call -------------------");
+            System.out.println(structure);
+            System.out.println("---------------- End After first call -----------------\n");
+            // a knows b is muddy and b not denounced so a knows he is muddy
+            // b knows a is muddy and a not denounced so b knows he is muddy
+            knowledgeFormula = new And(
+                    new AgentKnowledge(agents.get(0),
+                            new Not(new Or(new AgentKnowledge(agents.get(0), new Not(atoms.get(0))),
+                                    new AgentKnowledge(agents.get(0), atoms.get(0))))),
+                    new AgentKnowledge(agents.get(1),
+                            new Not(new Or(new AgentKnowledge(agents.get(1), new Not(atoms.get(1))),
+                                    new AgentKnowledge(agents.get(1), atoms.get(1))))));
             structure.publicAnnouncement(knowledgeFormula);
             System.out.println("---------- After first deduction first call -----------");
             System.out.println(structure);
@@ -151,6 +260,8 @@ public class MuddyChildrenProblem {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("Real world ? (" + realWorld + ") "
+                + new HashSet<>(Arrays.asList(realWorld)).equals(structure.getWorlds()));
     }
 
     public static void problemN3K2() {
@@ -298,18 +409,12 @@ public class MuddyChildrenProblem {
         }
 
         KripkeStructure structure = new KripkeStructure(graph, agents, false, true);
-        System.out.println("------------------= Before any call ------------------=");
+        System.out.println("------------------- Before any call -------------------");
         System.out.println(structure);
         System.out.println(structure.getGraph());
         System.out.println("----------------- End Before any call -----------------");
         Formula motherFormula = new Or(new Not(atoms.get(0)), new Not(atoms.get(1)), new Not(atoms.get(2)));
-        Formula knowledgeFormula = new And(
-                new AgentKnowledge(agents.get(0),
-                        new Diamond(agents.get(0), atoms.get(0))),
-                new AgentKnowledge(agents.get(1),
-                        new Diamond(agents.get(1), atoms.get(1))),
-                new AgentKnowledge(agents.get(2),
-                        new Diamond(agents.get(2), atoms.get(2))));
+        Formula knowledgeFormula;
 
         try {
             System.out.println("======================== k = 1 ========================");
@@ -317,6 +422,17 @@ public class MuddyChildrenProblem {
             System.out.println("------------------ After first call -------------------");
             System.out.println(structure);
             System.out.println("---------------- End After first call -----------------\n");
+            // a and b knows c is clean and at least 1 muddy child
+            // a knows b is muddy
+            // b knows a is muddy
+            // c knows a and b are muddy and at least 1 muddy child
+            knowledgeFormula = new And(
+                    new AgentKnowledge(agents.get(0),
+                            new Diamond(agents.get(0), atoms.get(0))),
+                    new AgentKnowledge(agents.get(1),
+                            new Diamond(agents.get(1), atoms.get(1))),
+                    new AgentKnowledge(agents.get(2),
+                            new Diamond(agents.get(2), atoms.get(2))));
             structure.publicAnnouncement(knowledgeFormula);
             System.out.println("------------- After first deduction call --------------");
             System.out.println(structure);
@@ -327,6 +443,11 @@ public class MuddyChildrenProblem {
             System.out.println("------------------ After second call ------------------");
             System.out.println(structure);
             System.out.println("---------------- End After second call ----------------\n");
+            // a knows c is muddy and b is muddy and b not denounced and there are at least
+            // 2 muddy children so a is muddy
+            // b knows c is muddy and a is muddy and a not denounced and there are at least
+            // 2 muddy children so b is muddy
+            // c knows a and b are muddy and at least 2 muddy children
             knowledgeFormula = new And(
                     new Diamond(agents.get(0),
                             new And(new Not(atoms.get(0)), new Not(atoms.get(1)), atoms.get(2))),
@@ -336,11 +457,14 @@ public class MuddyChildrenProblem {
                             new And(new Not(atoms.get(0)), new Not(atoms.get(1)), new Not(atoms.get(2)))));
             System.out.println("------------- After second deduction call -------------");
             structure.publicAnnouncement(knowledgeFormula);
+            // c knows is clean after a and b demounciation
             System.out.println(structure);
             System.out.println("----------- End After second deduction call -----------\n");
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("Real world ? (" + realWorld + ") "
+                + new HashSet<>(Arrays.asList(realWorld)).equals(structure.getWorlds()));
     }
 
     public static void problemN3K3() {
@@ -488,15 +612,16 @@ public class MuddyChildrenProblem {
         }
 
         KripkeStructure structure = new KripkeStructure(graph, agents, false, true);
-        System.out.println("------------------= Before any call ------------------=");
+        System.out.println("------------------- Before any call -------------------");
         System.out.println(structure);
         System.out.println(structure.getGraph());
         System.out.println("----------------- End Before any call -----------------");
         Formula motherFormula = new Or(new Not(atoms.get(0)), new Not(atoms.get(1)), new Not(atoms.get(2)));
-        Formula knowledgeFormula = new And(
-                new Not(new Box(agents.get(0), new Not(atoms.get(0)))),
-                new Not(new Box(agents.get(1), new Not(atoms.get(1)))),
-                new Not(new Box(agents.get(2), new Not(atoms.get(2)))));
+        Formula knowledgeFormula;
+        // knowledgeFormula = new And(
+        // new Not(new Box(agents.get(0), new Not(atoms.get(0)))),
+        // new Not(new Box(agents.get(1), new Not(atoms.get(1)))),
+        // new Not(new Box(agents.get(2), new Not(atoms.get(2)))));
 
         try {
             System.out.println("======================== k = 1 ========================");
@@ -504,59 +629,56 @@ public class MuddyChildrenProblem {
             System.out.println("------------------ After first call -------------------");
             System.out.println(structure);
             System.out.println("---------------- End After first call -----------------\n");
+            // a knows b and c are muddy and at least 1 muddy child and no one denounciate
+            // himself
+            // b knows a and b are muddy and at least 1 muddy child and no one denounciate
+            // himself
+            // c knows b and a are muddy and at least 1 muddy child and no one denounciate
+            // himself
+            knowledgeFormula = new And(
+                    new AgentKnowledge(agents.get(0),
+                            new Not(new Or(new AgentKnowledge(agents.get(0), new Not(atoms.get(0))),
+                                    new AgentKnowledge(agents.get(0), atoms.get(0))))),
+                    new AgentKnowledge(agents.get(1),
+                            new Not(new Or(new AgentKnowledge(agents.get(1), new Not(atoms.get(1))),
+                                    new AgentKnowledge(agents.get(1), atoms.get(1))))),
+                    new AgentKnowledge(agents.get(2),
+                            new Not(new Or(new AgentKnowledge(agents.get(2), new Not(atoms.get(2))),
+                                    new AgentKnowledge(agents.get(2), atoms.get(2))))));
             structure.publicAnnouncement(knowledgeFormula);
             System.out.println("------------- After first deduction call --------------");
             System.out.println(structure);
             System.out.println("----------- End After first deduction call ------------\n");
-
             System.out.println("======================== k = 2 ========================");
             structure.publicAnnouncement(motherFormula);
             System.out.println("------------------ After second call ------------------");
             System.out.println(structure);
             System.out.println("---------------- End After second call ----------------\n");
+            // a knows b and c are muddy and at least 2 muddy child and no one denounciate
+            // himself
+            // b knows a and b are muddy and at least 2 muddy child and no one denounciate
+            // himself
+            // c knows b and a are muddy and at least 2 muddy child and no one denounciate
+            // himself
             knowledgeFormula = new And(
-                    new Diamond(agents.get(0),
-                            new And(new Not(atoms.get(0)), new Not(new Box(agents.get(1), new Not(atoms.get(1)))),
-                                    new Not(new Box(agents.get(2), new Not(atoms.get(2)))))),
-                    new Diamond(agents.get(1),
-                            new And(new Not(new Box(agents.get(0), new Not(atoms.get(0)))), new Not(atoms.get(1)),
-                                    new Not(new Box(agents.get(2), new Not(atoms.get(2)))))),
-                    new Diamond(agents.get(2),
-                            new And(new Not(new Box(agents.get(0), new Not(atoms.get(0)))),
-                                    new Not(new Box(agents.get(1), new Not(atoms.get(1)))), new Not(atoms.get(2)))));
+                    new AgentKnowledge(agents.get(0),
+                            new Not(new Or(new AgentKnowledge(agents.get(0), new Not(atoms.get(0))),
+                                    new AgentKnowledge(agents.get(0), atoms.get(0))))),
+                    new AgentKnowledge(agents.get(1),
+                            new Not(new Or(new AgentKnowledge(agents.get(1), new Not(atoms.get(1))),
+                                    new AgentKnowledge(agents.get(1), atoms.get(1))))),
+                    new AgentKnowledge(agents.get(2),
+                            new Not(new Or(new AgentKnowledge(agents.get(2), new Not(atoms.get(2))),
+                                    new AgentKnowledge(agents.get(2), atoms.get(2))))));
             structure.publicAnnouncement(knowledgeFormula);
+            // a, b, c knows are all muddy and all denounciate himself
             System.out.println("------------- After second deduction call -------------");
             System.out.println(structure);
             System.out.println("----------- End After second deduction call -----------\n");
-
-            // TODO: bug (third question needed)
-            // System.out.println("======================== k = 3
-            // ========================");
-            // structure.publicAnnouncement(motherFormula);
-            // System.out.println("------------------ After third call
-            // -------------------");
-            // System.out.println(structure);
-            // System.out.println("---------------- End After third call
-            // -----------------\n");
-
-            // knowledgeFormula = new And(
-            // new Box(agents.get(0),
-            // new And(new Not(new Box(agents.get(1), new Not(atoms.get(1)))),
-            // new Not(new Box(agents.get(2), new Not(atoms.get(2)))))),
-            // new Box(agents.get(1),
-            // new And(new Not(new Box(agents.get(0), new Not(atoms.get(0)))),
-            // new Not(new Box(agents.get(2), new Not(atoms.get(2)))))),
-            // new Box(agents.get(2),
-            // new And(new Not(new Box(agents.get(0), new Not(atoms.get(0)))),
-            // new Not(new Box(agents.get(1), new Not(atoms.get(1)))))));
-            // structure.publicAnnouncement(knowledgeFormula);
-            // System.out.println("------------- After third deduction call
-            // --------------");
-            // System.out.println(structure);
-            // System.out.println("----------- End After third deduction call
-            // ------------\n");
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("Real world ? (" + realWorld + ") "
+                + new HashSet<>(Arrays.asList(realWorld)).equals(structure.getWorlds()));
     }
 }

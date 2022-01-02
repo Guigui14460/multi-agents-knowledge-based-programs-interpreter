@@ -61,6 +61,7 @@ public class TestKripkeStructure extends TestCase {
 
         assertEquals(agents, structure.getAgents());
         assertEquals(graph, structure.getGraph());
+        assertEquals(new HashSet<>(Arrays.asList(world)), structure.getWorlds());
     }
 
     /**

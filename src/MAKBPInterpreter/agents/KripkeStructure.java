@@ -253,4 +253,13 @@ public class KripkeStructure {
     public Collection<Agent> getAgents() {
         return this.agents;
     }
+
+    /**
+     * Gets the collection of remaining worlds in the structure.
+     * 
+     * @return collection of Kripke worlds
+     */
+    public Collection<KripkeWorld> getWorlds() {
+        return this.graph.keySet();
+    }
 }
