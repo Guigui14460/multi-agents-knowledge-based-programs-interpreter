@@ -136,8 +136,6 @@ public class And implements Formula {
     public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
         boolean result = true;
         for (Formula formula : this.operands) {
-            System.out.println("  --> (And) " + formula + " : ");
-            System.out.println("  Result for " + formula + " : " + formula.evaluate(state, objects));
             result = result && formula.evaluate(state, objects);
         }
         return result;

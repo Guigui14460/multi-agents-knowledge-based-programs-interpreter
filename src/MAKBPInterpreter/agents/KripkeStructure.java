@@ -156,8 +156,6 @@ public class KripkeStructure {
         // we check worlds that not satisfied the formula
         Set<KripkeWorld> worldsToRemove = new HashSet<>();
         for (KripkeWorld world : this.graph.keySet()) {
-            System.out.println("--> (World) " + world + " : ");
-            System.out.println("World result : " + world.satisfied(formula, this));
             if (!world.satisfied(formula, this)) {
                 worldsToRemove.add(world);
             }
@@ -174,9 +172,6 @@ public class KripkeStructure {
                 }
             }
         }
-
-        System.out.println(worldsToRemove);
-        System.out.println(this.graph.keySet());
     }
 
     @Override

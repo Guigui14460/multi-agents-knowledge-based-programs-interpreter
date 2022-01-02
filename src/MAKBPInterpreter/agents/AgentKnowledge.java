@@ -83,8 +83,6 @@ public class AgentKnowledge implements Formula {
 
     @Override
     public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
-        System.out.println("    --> Ka : " + agent.getName() + ", " + this.innerFormula);
-
         // we have always two additionnal arguments but we verify that is the case
         if (objects.length < 2) {
             throw new IllegalArgumentException("We must have at least the world and the Kripke structure");
@@ -100,11 +98,8 @@ public class AgentKnowledge implements Formula {
         // (M, s) |= K_i(phi) iff for all t, (M,t) |= phi, (s,t) e K_i(s)
         boolean result = true;
         for (KripkeWorld otherWorld : structure.getWorldFromOtherWorldAndAgent(world, agent)) {
-            boolean res = otherWorld.satisfied(this.innerFormula, structure);
-            System.out.println("      " + otherWorld.getName() + " : " + (res));
-            result = result && res;
+            result = result && otherWorld.satisfied(this.innerFormula, structure);
         }
-        System.out.println("    Result for " + this + " : " + result);
         return result;
     }
 }

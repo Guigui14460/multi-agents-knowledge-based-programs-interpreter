@@ -19,7 +19,6 @@ public class TestAction extends TestCase {
         Action action1 = new Action() {
             @Override
             public Object performs(Object... objects) throws Exception {
-                System.out.println("Ok");
                 return null;
             }
         };

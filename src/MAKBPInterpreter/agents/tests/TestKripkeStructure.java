@@ -177,7 +177,6 @@ public class TestKripkeStructure extends TestCase {
         graph.put(world3, new HashMap<>());
 
         KripkeStructure structure = new KripkeStructure(graph, agents, false, false);
-        System.out.println(structure.getGraph());
 
         assertEquals(new HashSet<>(Arrays.asList(world1, world2)),
                 structure.getWorldFromOtherWorldAndAgent(world1, agent));
