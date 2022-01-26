@@ -7,7 +7,6 @@ import org.junit.Test;
 import MAKBPInterpreter.agents.Action;
 import MAKBPInterpreter.agents.Agent;
 import MAKBPInterpreter.agents.AgentProgram;
-import MAKBPInterpreter.agents.Observation;
 import MAKBPInterpreter.logic.And;
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
@@ -101,7 +100,7 @@ public class TestAgent extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.agents.Agent#getAssociatedAction(Observation)}
+     * {@link MAKBPInterpreter.agents.Agent#getAssociatedAction(Formula)}
      * method.
      */
     @Test
@@ -113,16 +112,13 @@ public class TestAgent extends TestCase {
         program.put(null, action2);
         Agent agent = new Agent(name, program);
 
-        Observation observation1 = new Observation(formula1);
-        assertEquals("Selected action is not correct", action1, agent.getAssociatedAction(observation1));
-
-        Observation observation2 = new Observation(new Not(formula1));
-        assertEquals("Selected action is not correct", action2, agent.getAssociatedAction(observation2));
+        assertEquals("Selected action is not correct", action1, agent.getAssociatedAction(formula1));
+        assertEquals("Selected action is not correct", action2, agent.getAssociatedAction(new Not(formula1)));
     }
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.agents.Agent#performsAssociatedAction(Observation, Object...)}
+     * {@link MAKBPInterpreter.agents.Agent#performsAssociatedAction(Formula, Object...)}
      * method.
      */
     @Test
@@ -133,23 +129,22 @@ public class TestAgent extends TestCase {
         program.put(formula1, action2);
         Agent agent = new Agent(name, program);
 
-        Observation observation1 = new Observation(formula1);
         assertEquals(0, action2.getAcc());
         try {
-            agent.performsAssociatedAction(observation1, 10);
+            agent.performsAssociatedAction(formula1, 10);
         } catch (Exception e) {
             e.printStackTrace();
             fail("Unexpected exception");
         }
         assertEquals(10, action2.getAcc());
 
-        assertThrows(Exception.class, () -> agent.performsAssociatedAction(observation1, 10, 20));
+        assertThrows(Exception.class, () -> agent.performsAssociatedAction(formula1, 10, 20));
         assertEquals(10, action2.getAcc());
     }
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.agents.Agent#performsAssociatedAction(Observation, Object...)}
+     * {@link MAKBPInterpreter.agents.Agent#performsAssociatedAction(Formula, Object...)}
      * method with a null action object.
      */
     @Test
@@ -161,8 +156,7 @@ public class TestAgent extends TestCase {
         program.put(formula1, action2);
         Agent agent = new Agent(name, program);
 
-        Observation observation1 = new Observation(formula2);
-        assertThrows(NullPointerException.class, () -> agent.performsAssociatedAction(observation1, 10, 20));
+        assertThrows(NullPointerException.class, () -> agent.performsAssociatedAction(formula2, 10, 20));
     }
 
     /**
@@ -182,10 +176,9 @@ public class TestAgent extends TestCase {
         program.put(formula2, action2);
         Agent agent = new Agent(name, program);
 
-        Observation observation1 = new Observation(formula2);
         assertEquals("Observation must be retrieved", formula2, agent.reverseEngineering(action2));
         assertNull("Observation must be null", agent.reverseEngineering());
-        agent.getAssociatedAction(observation1);
+        agent.getAssociatedAction(formula2);
         assertEquals("Observation must be retrieved", formula2, agent.reverseEngineering());
 
         AgentProgram program2 = new AgentProgram(program);

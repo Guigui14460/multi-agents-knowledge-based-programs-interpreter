@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="MAKBPInterpreter" default="run" basedir=".">
     <property name="app.name"      value="MAKBPInterpreter" />
-    <property name="app.version"   value="0.1"/>
+    <property name="app.version"   value="0.2.0"/>
     <property name="app.fullname"  value="${app.name}-${app.version}"/>
     <property name="app.mainclass"  value="MAKBPInterpreter.Main"/>
     

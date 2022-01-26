@@ -44,6 +44,47 @@ public class TestKripkeStructure extends TestCase {
     }
 
     /**
+     * Tests the
+     * {@link MAKBPInterpreter.agents.KripkeStructure#KripkeStructure(KripkeStructure)}
+     * constructor.
+     */
+    @Test
+    public void testCopyConstructor() {
+        Agent agent = new Agent("a", new AgentProgram());
+        Collection<Agent> agents = new HashSet<>(Arrays.asList(agent));
+        Atom atom = new Atom("a is blocked");
+
+        Map<Atom, Boolean> mapWorld1 = new HashMap<>();
+        mapWorld1.put(atom, true);
+        KripkeWorld world1 = new KripkeWorld(mapWorld1);
+        Map<Atom, Boolean> mapWorld2 = new HashMap<>();
+        mapWorld2.put(atom, false);
+        KripkeWorld world2 = new KripkeWorld(mapWorld2);
+
+        Map<Agent, Set<KripkeWorld>> map = new HashMap<>();
+        map.put(agent, new HashSet<>(Arrays.asList(world1, world2)));
+        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
+        graph.put(world1, new HashMap<>(map));
+        graph.put(world2, new HashMap<>(map));
+
+        KripkeStructure structure = new KripkeStructure(graph, agents);
+        KripkeStructure structure2 = new KripkeStructure(structure);
+
+        assertTrue(structure.equals(structure2));
+
+        try {
+            structure2.publicAnnouncement(atom);
+            assertFalse(structure.equals(structure2));
+            assertEquals(new HashSet<>(Arrays.asList(world1, world2)), structure.getWorlds());
+            assertEquals(agents, structure.getAgents());
+            assertEquals(new HashSet<>(Arrays.asList(world1)), structure2.getWorlds());
+            assertEquals(agents, structure2.getAgents());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Tests the {@link MAKBPInterpreter.agents.KripkeStructure#getAgents()} and
      * {@link MAKBPInterpreter.agents.KripkeStructure#getGraph()} methods.
      */

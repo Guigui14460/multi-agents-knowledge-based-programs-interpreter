@@ -45,12 +45,12 @@ public class Agent {
     /**
      * Gets the associated action of an observation.
      * 
-     * @param observation observation of the environment
+     * @param observation formula representing an observation of the environment
      * @return associated action
      */
-    public Action getAssociatedAction(Observation observation) {
-        if (this.program.containsKey(observation.getFormula())) {
-            this.lastSelectedAction = this.program.get(observation.getFormula());
+    public Action getAssociatedAction(Formula observation) {
+        if (this.program.containsKey(observation)) {
+            this.lastSelectedAction = this.program.get(observation);
             return this.lastSelectedAction;
         }
         if (this.program.containsKey(null)) {
@@ -92,7 +92,7 @@ public class Agent {
     /**
      * Performs the selected action corresponding an observation.
      * 
-     * @param observation observation of an environment
+     * @param observation formula representing an observation of an environment
      * @param objects     any number or type of object arguments to pass to action
      *                    performer
      * @return action return
@@ -100,10 +100,10 @@ public class Agent {
      *                   processed, etc.
      *                   Thrown by the action when executing.
      * 
-     * @see #getAssociatedAction(Observation)
+     * @see #getAssociatedAction(Formula)
      * @see Action#performs(Object...)
      */
-    public Object performsAssociatedAction(Observation observation, Object... objects) throws Exception {
+    public Object performsAssociatedAction(Formula observation, Object... objects) throws Exception {
         return this.getAssociatedAction(observation).performs(objects);
     }
 

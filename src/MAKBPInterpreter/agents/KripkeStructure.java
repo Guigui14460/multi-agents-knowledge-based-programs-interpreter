@@ -60,6 +60,16 @@ public class KripkeStructure {
     }
 
     /**
+     * Copy constructor.
+     * 
+     * @param structure structure to copy
+     */
+    public KripkeStructure(KripkeStructure structure) {
+        this.agents = new HashSet<>(structure.agents);
+        this.graph = new HashMap<>(structure.graph);
+    }
+
+    /**
      * Initializes an empty graph with all worlds and agents as keys.
      * 
      * @param worlds all worlds of the structure
@@ -185,6 +195,10 @@ public class KripkeStructure {
 
     @Override
     public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+
         if (other instanceof KripkeStructure) {
             KripkeStructure structure = (KripkeStructure) other;
 

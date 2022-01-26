@@ -4,7 +4,11 @@
  * 
  * It defines :
  * <ul>
- * <li>the modal logic ({@link MAKBPInterpreter.logic logic} package)</li>
+ * <li>the logic ({@link MAKBPInterpreter.logic logic} package)</li>
+ * <li>the agents, modal logic and raisoning ({@link MAKBPInterpreter.agents
+ * agents} package)</li>
+ * <li>the interpreter ({@link MAKBPInterpreter.interpreter interpreter}
+ * package)</li>
  * </ul>
  * 
  * @author Guillaume LETELLIER, Corentin PIERRE

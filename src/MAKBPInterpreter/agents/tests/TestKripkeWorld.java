@@ -133,4 +133,25 @@ public class TestKripkeWorld extends TestCase {
             fail("unexpected thrown exception");
         }
     }
+
+    /**
+     * Tests the
+     * {@link MAKBPInterpreter.agents.KripkeWorld#differencesBetweenWorlds(KripkeWorld)}
+     * method.
+     */
+    @Test
+    public void testDifferencesBetweenWorlds() {
+        Atom atom1 = new Atom("1");
+        Atom atom2 = new Atom("2");
+
+        Map<Atom, Boolean> assignment = new HashMap<>();
+        assignment.put(atom1, true);
+        assignment.put(atom2, false);
+        KripkeWorld world1 = new KripkeWorld("test", assignment);
+        Map<Atom, Boolean> assignment2 = new HashMap<>(assignment);
+        assignment2.put(atom1, false);
+        KripkeWorld world2 = new KripkeWorld("test2", assignment2);
+
+        assertEquals(new HashSet<>(Arrays.asList(atom1)), world1.differencesBetweenWorlds(world2));
+    }
 }

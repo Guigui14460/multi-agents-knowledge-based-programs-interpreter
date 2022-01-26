@@ -2,11 +2,14 @@ package MAKBPInterpreter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
+import java.util.function.BiFunction;
 
 import MAKBPInterpreter.agents.Action;
 import MAKBPInterpreter.agents.Agent;
@@ -15,6 +18,7 @@ import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.Diamond;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
+import MAKBPInterpreter.interpreter.MAKBPInterpreter;
 import MAKBPInterpreter.logic.And;
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
@@ -44,6 +48,139 @@ public class MuddyChildrenProblem {
             return null;
         }
     };
+
+    public static void problem(int n, int realWorld) {
+        // if n = 3, 0 <= realWorld <= 7 (e.g: 3 = (110)_2 <=> A and B muddy)
+
+        // agent creation
+        List<Agent> agents = new ArrayList<>();
+        List<AgentProgram> agentPrograms = new ArrayList<>();
+        List<Atom> atoms = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            agentPrograms.add(new AgentProgram());
+            agents.add(new Agent(Integer.toString(i), agentPrograms.get(i)));
+            atoms.add(new Atom(Integer.toString(i) + " is muddy"));
+        }
+
+        // programs creation
+        Map<Action, Set<Object>> objects = new HashMap<>();
+        Map<Agent, Set<Atom>> atomsAssociation = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            Atom atom = atoms.get(i);
+            Agent agent = agents.get(i);
+            AgentProgram ap = agentPrograms.get(i);
+
+            // action: denounceItSelf
+            Action denounceItself = new Action() {
+                @Override
+                public Object performs(Object... objects) throws IllegalArgumentException {
+                    if (objects.length != 2) {
+                        throw new IllegalArgumentException("Need the agent object and a formula");
+                    }
+                    Agent agent = (Agent) objects[0];
+                    Atom atom = (Atom) objects[1];
+                    System.out.println("L'agent " + agent.getName() + " s'est dénoncé");
+                    return atom;
+                }
+            };
+            ap.put(new AgentKnowledge(agent, atom), denounceItself);
+            objects.put(denounceItself, new HashSet<>(Arrays.asList(agent, atom)));
+
+            // action: beQuiet
+            Action beQuiet = new Action() {
+                @Override
+                public Object performs(Object... objects) throws IllegalArgumentException {
+                    if (objects.length == 0) {
+                        throw new IllegalArgumentException("Need at least the agent object");
+                    }
+                    Agent agent = (Agent) objects[0];
+                    System.out.println("L'agent " + agent.getName() + " s'est tait");
+                    return null;
+                }
+            };
+            ap.put(null, beQuiet);
+            objects.put(beQuiet, new HashSet<>(Arrays.asList(agent)));
+
+            atomsAssociation.put(agent, new HashSet<>(Arrays.asList(atom)));
+        }
+
+        // permissions creation
+        Map<Agent, Set<Agent>> permissions = new HashMap<>();
+        for (Agent a : agents) {
+            Set<Agent> set = new HashSet<>(agents);
+            set.remove(a);
+            permissions.put(a, set);
+        }
+
+        // kripke worlds and structure
+        boolean realWorldIsRandom = false;
+        List<KripkeWorld> worlds = new ArrayList<>();
+        KripkeWorld realWorldObject = null;
+        for (int i = 0; i < Math.pow(2, n); i++) {
+            Map<Atom, Boolean> assignment = new HashMap<>();
+            // TODO: erreur à régler d'abord ici
+            for (int agentAtom = 0; agentAtom < n; agentAtom++) {
+                assignment.put(atoms.get(agentAtom), ((i / ((int) Math.pow(2, agentAtom))) % 2) != 0);
+            }
+            KripkeWorld world = new KripkeWorld(assignment);
+            worlds.add(world);
+            if (i == realWorld) {
+                realWorldObject = world;
+            }
+        }
+        if (realWorldObject == null) {
+            realWorldIsRandom = true;
+            realWorldObject = worlds.get((new Random()).nextInt(worlds.size()));
+        }
+        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
+        for (KripkeWorld world : worlds) {
+            graph.put(world, new HashMap<>());
+            for (int i = 0; i < agents.size(); i++) {
+                Agent agent = agents.get(i);
+                graph.get(world).put(agent, new HashSet<>());
+                for (KripkeWorld world2 : worlds) {
+                    Collection<Atom> differences = world.differencesBetweenWorlds(world2);
+                    if (differences.size() > 1 || differences.size() == 0) {
+                        continue;
+                    }
+
+                    if (atomsAssociation.get(agent).contains(differences.toArray()[0])) {
+                        graph.get(world).get(agent).add(world2);
+                    }
+                }
+            }
+        }
+        KripkeStructure structure = new KripkeStructure(graph, agents, false, true);
+
+        Set<Formula> operands = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            operands.add(atoms.get(i));
+        }
+        Formula formula = new Or(operands);
+
+        // interpreter
+        MAKBPInterpreter interpreter = new MAKBPInterpreter(new HashSet<>(agents), structure, permissions, objects,
+                atomsAssociation);
+        System.out.println(structure);
+        try {
+            BiFunction<Boolean, KripkeWorld, Boolean> isFinished = (isRandom, rWObject) -> {
+                if (isRandom) {
+                    return interpreter.isFinished();
+                }
+                return interpreter.isFinished(rWObject);
+            };
+            int k = 0;
+            while (!isFinished.apply(realWorldIsRandom, realWorldObject)) {
+                k++;
+                System.out.println("====================== k = " + Integer.toString(k) + " ======================");
+                interpreter.publicAnnouncement(formula, realWorldObject);
+                Thread.sleep(1000);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
 
     public static void problemN2K1() {
         System.out.println("Muddy Children Problem (n=2, k=1)");

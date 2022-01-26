@@ -1,6 +1,9 @@
 package MAKBPInterpreter.agents;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
@@ -57,6 +60,22 @@ public class KripkeWorld {
      */
     public boolean satisfied(Formula formula, KripkeStructure structure) throws Exception {
         return formula.evaluate(this.assignment, this, structure);
+    }
+
+    /**
+     * Returns the differences between two worlds (all atoms divergence).
+     * 
+     * @param world other world
+     * @return atoms collection representing the divergence
+     */
+    public Collection<Atom> differencesBetweenWorlds(KripkeWorld world) {
+        Set<Atom> atoms = new HashSet<>();
+        for (Map.Entry<Atom, Boolean> entry : this.assignment.entrySet()) {
+            if (world.assignment.get(entry.getKey()) != entry.getValue()) {
+                atoms.add(entry.getKey());
+            }
+        }
+        return atoms;
     }
 
     @Override
