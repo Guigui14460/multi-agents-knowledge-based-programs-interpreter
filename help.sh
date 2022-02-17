@@ -1,1 +1,1 @@
-ant -p build.sh
+ant -p

@@ -3,6 +3,7 @@ package MAKBPInterpreter.agents;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import MAKBPInterpreter.logic.Atom;
@@ -59,6 +60,7 @@ public class KripkeWorld {
      * @throws Exception thrown if an illegal argument is passed
      */
     public boolean satisfied(Formula formula, KripkeStructure structure) throws Exception {
+        System.out.println("--------- World Evaluation : " + this);
         return formula.evaluate(this.assignment, this, structure);
     }
 
@@ -85,11 +87,28 @@ public class KripkeWorld {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof KripkeWorld) {
-            KripkeWorld world = (KripkeWorld) other;
-            return world.name.equals(this.name) && world.assignment.equals(this.assignment);
+        if (this == other)
+            return true;
+        if (other == null)
+            return false;
+        if (!(other instanceof KripkeWorld))
+            return false;
+
+        KripkeWorld world = (KripkeWorld) other;
+        if (!world.name.equals(this.name)) {
+            return false;
         }
-        return false;
+
+        if (!world.assignment.equals(this.assignment)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.name, this.assignment);
     }
 
     /**

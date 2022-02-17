@@ -1,6 +1,7 @@
 package MAKBPInterpreter.agents;
 
 import java.util.Map;
+import java.util.Objects;
 
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
@@ -38,12 +39,21 @@ public class AgentKnowledge implements Formula {
 
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof AgentKnowledge)) {
+        if (this == other)
+            return true;
+        if (other == null)
             return false;
-        }
+        if (!(other instanceof AgentKnowledge))
+            return false;
+
         AgentKnowledge otherAgentKnowledge = (AgentKnowledge) other;
         return otherAgentKnowledge.agent.equals(this.agent)
                 && this.innerFormula.equals(otherAgentKnowledge.innerFormula);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.agent.getName(), this.innerFormula);
     }
 
     @Override
@@ -97,8 +107,12 @@ public class AgentKnowledge implements Formula {
         //
         // (M, s) |= K_i(phi) iff for all t, (M,t) |= phi, (s,t) e K_i(s)
         boolean result = true;
+        System.out.println(this.innerFormula + " evaluation :");
         for (KripkeWorld otherWorld : structure.getWorldFromOtherWorldAndAgent(world, agent)) {
-            result = result && otherWorld.satisfied(this.innerFormula, structure);
+            System.out.println("Ka evaluate World nammed " + otherWorld.getName());
+            boolean res = this.innerFormula.evaluate(otherWorld.getAssignment(), otherWorld, structure);
+            System.out.println("==> " + res);
+            result = result && res;
         }
         return result;
     }

@@ -2,6 +2,7 @@ package MAKBPInterpreter.agents;
 
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import MAKBPInterpreter.logic.And;
@@ -43,21 +44,35 @@ public class Agent {
     }
 
     /**
-     * Gets the associated action of an observation.
+     * Gets the associated action of a structure and a pointed world.
      * 
-     * @param observation formula representing an observation of the environment
-     * @return associated action
+     * @param structure    Kripke structure
+     * @param pointedWorld world to retrieve knowledge
+     * 
+     * @return associated action or null if no matched conditions and else is not
+     *         present
+     * @throws Exception throws when the formula not supported evaluate operation or
+     *                   expected object not given
      */
-    public Action getAssociatedAction(Formula observation) {
-        if (this.program.containsKey(observation)) {
-            this.lastSelectedAction = this.program.get(observation);
-            return this.lastSelectedAction;
+    public Action getAssociatedAction(KripkeStructure structure, KripkeWorld pointedWorld) throws Exception {
+        int i = -1;
+        boolean condition_validate = false;
+        while (!condition_validate) {
+            i++;
+            Formula key = null;
+            try {
+                key = this.program.getKey(i);
+            } catch (IndexOutOfBoundsException e) {
+                return null;
+            }
+            if (key != null) {
+                condition_validate = key.evaluate(pointedWorld.getAssignment(), pointedWorld, structure);
+            } else {
+                condition_validate = true;
+            }
         }
-        if (this.program.containsKey(null)) {
-            this.lastSelectedAction = this.program.get(null);
-            return this.lastSelectedAction;
-        }
-        return null;
+        this.lastSelectedAction = this.program.getValue(i);
+        return this.lastSelectedAction;
     }
 
     /**
@@ -90,21 +105,24 @@ public class Agent {
     }
 
     /**
-     * Performs the selected action corresponding an observation.
+     * Performs the selected action corresponding a structure and a pointed world.
      * 
-     * @param observation formula representing an observation of an environment
-     * @param objects     any number or type of object arguments to pass to action
-     *                    performer
+     * @param structure    Kripke structure
+     * @param pointedWorld world to retrieve knowledge
+     * @param objects      any number or type of object arguments to pass to action
+     *                     performer
      * @return action return
      * @throws Exception throws when receive illegal arguments, objects cannot be
-     *                   processed, etc.
-     *                   Thrown by the action when executing.
+     *                   processed, etc or when the formula not supported this
+     *                   operation or
+     *                   expected object not given
      * 
-     * @see #getAssociatedAction(Formula)
+     * @see #getAssociatedAction(KripkeStructure, KripkeWorld)
      * @see Action#performs(Object...)
      */
-    public Object performsAssociatedAction(Formula observation, Object... objects) throws Exception {
-        return this.getAssociatedAction(observation).performs(objects);
+    public Object performsAssociatedAction(KripkeStructure structure, KripkeWorld pointedWorld, Object... objects)
+            throws Exception {
+        return this.getAssociatedAction(structure, pointedWorld).performs(objects);
     }
 
     /**
@@ -122,11 +140,25 @@ public class Agent {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof Agent) {
-            Agent agent = (Agent) other;
-            return agent.name.equals(this.name) && agent.program.equals(this.program);
-        }
-        return false;
+        if (this == other)
+            return true;
+        if (other == null)
+            return false;
+        if (!(other instanceof Agent))
+            return false;
+
+        Agent agent = (Agent) other;
+        return agent.name.equals(this.name) && agent.program.equals(this.program);
+    }
+
+    @Override
+    public String toString() {
+        return "Agent " + this.getName();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.name, this.program);
     }
 
     /**

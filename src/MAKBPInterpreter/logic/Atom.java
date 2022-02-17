@@ -1,6 +1,7 @@
 package MAKBPInterpreter.logic;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents an atom, a proposition.
@@ -29,11 +30,18 @@ public class Atom implements Formula {
     public boolean equals(Object other) {
         if (this == other)
             return true;
+        if (other == null)
+            return false;
         if (!(other instanceof Atom))
             return false;
 
         Atom otherAtom = (Atom) other;
         return predicate.equals(otherAtom.predicate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.predicate);
     }
 
     @Override

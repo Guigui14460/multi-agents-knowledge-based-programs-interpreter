@@ -1,6 +1,7 @@
 package MAKBPInterpreter.logic;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents the implication of a formula to an other.
@@ -39,11 +40,18 @@ public class Implication implements Formula {
     public boolean equals(Object other) {
         if (this == other)
             return true;
+        if (other == null)
+            return false;
         if (!(other instanceof Implication))
             return false;
 
         Implication otherImply = (Implication) other;
         return this.leftOperand.equals(otherImply.leftOperand) && this.rightOperand.equals(otherImply.rightOperand);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.leftOperand, this.rightOperand);
     }
 
     @Override

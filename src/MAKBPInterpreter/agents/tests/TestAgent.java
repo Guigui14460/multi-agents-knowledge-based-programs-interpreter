@@ -2,11 +2,19 @@ package MAKBPInterpreter.agents.tests;
 
 import static org.junit.Assert.assertThrows;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.Test;
 
 import MAKBPInterpreter.agents.Action;
 import MAKBPInterpreter.agents.Agent;
 import MAKBPInterpreter.agents.AgentProgram;
+import MAKBPInterpreter.agents.KripkeStructure;
+import MAKBPInterpreter.agents.KripkeWorld;
 import MAKBPInterpreter.logic.And;
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
@@ -100,7 +108,7 @@ public class TestAgent extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.agents.Agent#getAssociatedAction(Formula)}
+     * {@link MAKBPInterpreter.agents.Agent#getAssociatedAction(MAKBPInterpreter.agents.KripkeStructure, MAKBPInterpreter.agents.KripkeWorld)}
      * method.
      */
     @Test
@@ -112,13 +120,33 @@ public class TestAgent extends TestCase {
         program.put(null, action2);
         Agent agent = new Agent(name, program);
 
-        assertEquals("Selected action is not correct", action1, agent.getAssociatedAction(formula1));
-        assertEquals("Selected action is not correct", action2, agent.getAssociatedAction(new Not(formula1)));
+        Map<Atom, Boolean> assignment = new HashMap<>();
+        assignment.put((Atom) formula1, true);
+        KripkeWorld world = new KripkeWorld(assignment);
+        Set<Agent> agents = new HashSet<>(Arrays.asList(agent));
+        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
+        Map<Agent, Set<KripkeWorld>> relations = new HashMap<>();
+        relations.put(agent, new HashSet<>(Arrays.asList(world)));
+        graph.put(world, relations);
+        KripkeStructure structure = new KripkeStructure(graph, agents);
+
+        try {
+            assertEquals("Selected action is not correct", action1, agent.getAssociatedAction(structure, world));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        assignment.put((Atom) formula1, false);
+        try {
+            assertEquals("Selected action is not correct", action2, agent.getAssociatedAction(structure, world));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.agents.Agent#performsAssociatedAction(Formula, Object...)}
+     * {@link MAKBPInterpreter.agents.Agent#performsAssociatedAction(MAKBPInterpreter.agents.KripkeStructure, MAKBPInterpreter.agents.KripkeWorld, Object...)}
      * method.
      */
     @Test
@@ -129,22 +157,33 @@ public class TestAgent extends TestCase {
         program.put(formula1, action2);
         Agent agent = new Agent(name, program);
 
+        Map<Atom, Boolean> assignment = new HashMap<>();
+        assignment.put((Atom) formula1, true);
+        KripkeWorld world = new KripkeWorld(assignment);
+        Set<Agent> agents = new HashSet<>(Arrays.asList(agent));
+        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
+        Map<Agent, Set<KripkeWorld>> relations = new HashMap<>();
+        relations.put(agent, new HashSet<>(Arrays.asList(world)));
+        graph.put(world, relations);
+        KripkeStructure structure = new KripkeStructure(graph, agents);
+
         assertEquals(0, action2.getAcc());
         try {
-            agent.performsAssociatedAction(formula1, 10);
+            agent.performsAssociatedAction(structure, world, 10);
         } catch (Exception e) {
             e.printStackTrace();
             fail("Unexpected exception");
         }
         assertEquals(10, action2.getAcc());
 
-        assertThrows(Exception.class, () -> agent.performsAssociatedAction(formula1, 10, 20));
+        assertThrows(Exception.class, () -> agent.performsAssociatedAction(structure, world,
+                10, 20));
         assertEquals(10, action2.getAcc());
     }
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.agents.Agent#performsAssociatedAction(Formula, Object...)}
+     * {@link MAKBPInterpreter.agents.Agent#performsAssociatedAction(MAKBPInterpreter.agents.KripkeStructure, MAKBPInterpreter.agents.KripkeWorld, Object...)}
      * method with a null action object.
      */
     @Test
@@ -152,11 +191,20 @@ public class TestAgent extends TestCase {
         String name = "agent 1";
         AgentProgram program = new AgentProgram();
         Formula formula1 = new Atom("1 is muddy");
-        Formula formula2 = new Not(formula1);
         program.put(formula1, action2);
         Agent agent = new Agent(name, program);
 
-        assertThrows(NullPointerException.class, () -> agent.performsAssociatedAction(formula2, 10, 20));
+        Map<Atom, Boolean> assignment = new HashMap<>();
+        assignment.put((Atom) formula1, false);
+        KripkeWorld world = new KripkeWorld(assignment);
+        Set<Agent> agents = new HashSet<>(Arrays.asList(agent));
+        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
+        Map<Agent, Set<KripkeWorld>> relations = new HashMap<>();
+        relations.put(agent, new HashSet<>(Arrays.asList(world)));
+        graph.put(world, relations);
+        KripkeStructure structure = new KripkeStructure(graph, agents);
+
+        assertThrows(NullPointerException.class, () -> agent.performsAssociatedAction(structure, world, 10, 20));
     }
 
     /**
@@ -176,10 +224,27 @@ public class TestAgent extends TestCase {
         program.put(formula2, action2);
         Agent agent = new Agent(name, program);
 
-        assertEquals("Observation must be retrieved", formula2, agent.reverseEngineering(action2));
+        Map<Atom, Boolean> assignment = new HashMap<>();
+        assignment.put((Atom) formula1, false);
+        assignment.put((Atom) formula3, false);
+        KripkeWorld world = new KripkeWorld(assignment);
+        Set<Agent> agents = new HashSet<>(Arrays.asList(agent));
+        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
+        Map<Agent, Set<KripkeWorld>> relations = new HashMap<>();
+        relations.put(agent, new HashSet<>(Arrays.asList(world)));
+        graph.put(world, relations);
+        KripkeStructure structure = new KripkeStructure(graph, agents);
+
+        assertEquals("Observation must be retrieved", formula2,
+                agent.reverseEngineering(action2));
         assertNull("Observation must be null", agent.reverseEngineering());
-        agent.getAssociatedAction(formula2);
-        assertEquals("Observation must be retrieved", formula2, agent.reverseEngineering());
+        try {
+            agent.getAssociatedAction(structure, world);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        assertEquals("Observation must be retrieved", formula2,
+                agent.reverseEngineering());
 
         AgentProgram program2 = new AgentProgram(program);
         program2.put(formula1, action2);

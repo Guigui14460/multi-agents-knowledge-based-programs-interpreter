@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import MAKBPInterpreter.logic.Formula;
@@ -58,11 +59,20 @@ final public class AgentProgram implements Map<Formula, Action> {
 
     @Override
     public boolean equals(Object other) {
-        if (other instanceof AgentProgram) {
-            AgentProgram program = (AgentProgram) other;
-            return program.keys.equals(this.keys) && program.values.equals(this.values);
-        }
-        return false;
+        if (this == other)
+            return true;
+        if (other == null)
+            return false;
+        if (!(other instanceof AgentProgram))
+            return false;
+
+        AgentProgram program = (AgentProgram) other;
+        return program.keys.equals(this.keys) && program.values.equals(this.values);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.keys, this.values);
     }
 
     @Override

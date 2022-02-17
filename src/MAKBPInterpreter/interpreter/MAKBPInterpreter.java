@@ -1,20 +1,20 @@
 package MAKBPInterpreter.interpreter;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import MAKBPInterpreter.agents.Action;
 import MAKBPInterpreter.agents.Agent;
-import MAKBPInterpreter.agents.AgentKnowledge;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
 import MAKBPInterpreter.agents.exceptions.KripkeStructureInvalidRuntimeException;
+import MAKBPInterpreter.agents.exceptions.NoKripkeWorldPossibleException;
 import MAKBPInterpreter.logic.And;
-import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
-import MAKBPInterpreter.logic.Not;
 
 /**
  * Represents a Multi-Agent Knowledge-Based Program interpreter.
@@ -40,25 +40,18 @@ public class MAKBPInterpreter {
     /**
      * List of objects to pass for each available actions on the whole program.
      */
-    private Map<Action, Set<Object>> objects;
-
-    /**
-     * Each agent has a set of associated atoms.
-     */
-    private Map<Agent, Set<Atom>> atomsAssociation;
+    private Map<Action, List<Object>> objects;
 
     /**
      * Constructor.
      * 
-     * @param agents           set of agents
-     * @param structure        default structure to copy for each agents
-     * @param permissions      agent programs knowledge for each agent
-     * @param objects          sets of objects to pass for action execution
-     * @param atomsAssociation atoms associated to an agent
+     * @param agents      set of agents
+     * @param structure   default structure to copy for each agents
+     * @param permissions agent programs knowledge for each agent
+     * @param objects     lists of objects to pass for action execution
      */
     public MAKBPInterpreter(Set<Agent> agents, KripkeStructure structure,
-            Map<Agent, Set<Agent>> permissions, Map<Action, Set<Object>> objects,
-            Map<Agent, Set<Atom>> atomsAssociation) {
+            Map<Agent, Set<Agent>> permissions, Map<Action, List<Object>> objects) {
         this.structures = new HashMap<>();
         for (Agent agent : agents) {
             KripkeStructure newStructure = new KripkeStructure(structure);
@@ -66,7 +59,6 @@ public class MAKBPInterpreter {
         }
         this.permissions = permissions;
         this.objects = objects;
-        this.atomsAssociation = atomsAssociation;
     }
 
     /**
@@ -85,62 +77,270 @@ public class MAKBPInterpreter {
      * 
      * We return the return value of each actions.
      * 
-     * @param formula      formula to announce
-     * @param pointedWorld pointed world to analyse
+     * @param agents                       list of agents who received announcement
+     * @param mainFormula                  formula to announce
+     * @param initialObservations          initial observations of each agent
+     * @param pointedWorld                 pointed world to analyse
+     * @param integrateInitialObservations boolean representing if we integrate
+     *                                     initial observations or not
      * @return return values of each executed actions
      * @throws Exception            thrown when thrown in structure public
      *                              annoucement method
      * @throws NullPointerException thrown when the {@code pointedWorld} is no more
      *                              in at least one of the Kripke structures
      */
-    public Map<Agent, Object> publicAnnouncement(Formula formula, KripkeWorld pointedWorld) throws Exception {
-        Map<Agent, Formula> retrievedObservation = new HashMap<>();
-        Map<Agent, Object> returns = new HashMap<>();
-        for (Map.Entry<Agent, KripkeStructure> entry : this.structures.entrySet()) {
-            // announcement
-            entry.getValue().publicAnnouncement(formula);
+    public Map<Agent, Object> interpret(Collection<Agent> agents, Formula mainFormula,
+            Map<Agent, Formula> initialObservations, KripkeWorld pointedWorld, boolean integrateInitialObservations)
+            throws Exception {
+        this.publicAnnouncement(agents, mainFormula);
+        Map<Agent, Action> actions = this.getAssociatedAction(agents, pointedWorld);
+        Map<Agent, Object> returns = this.executeAction(actions);
+        Map<Agent, Formula> observations = this.reverseEngineering(actions);
 
-            System.out.println("Agent " + entry.getKey().getName() + " : " + entry.getValue());
+        // agent self-deduction from other agent program
+        for (Agent agent : agents) {
+            System.out.println("Agent " + agent.getName() + " : " + this.structures.get(agent));
 
-            Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = entry.getValue().getGraph();
-            Set<KripkeWorld> set = graph.get(pointedWorld).get(entry.getKey());
-            Set<Formula> operands = new HashSet<>();
-            for (Map.Entry<Atom, Boolean> entryAssignment : pointedWorld.getAssignment().entrySet()) {
-                // we check if the current iterated atom is associated to the agent
-                if (atomsAssociation.get(entry.getKey()).contains(entryAssignment.getKey())) {
-                    if (entryAssignment.getValue()) {
-                        operands.add(entryAssignment.getKey());
-                    } else {
-                        operands.add(new Not(entryAssignment.getKey()));
+            Formula f = this.raisonning(agent, observations);
+            if (initialObservations.containsKey(agent) && initialObservations.get(agent) != null) {
+                f = new And(f, initialObservations.get(agent));
+            }
+            this.publicAnnouncement(agent, f);
+
+            System.out.println("Agent " + agent.getName() + " : " + this.structures.get(agent));
+        }
+        Map<Agent, Formula> formulas = this.raisonning(agents, observations, initialObservations,
+                integrateInitialObservations);
+        this.publicAnnouncement(formulas);
+
+        return returns;
+    }
+
+    /**
+     * Annoucement of a public formula.
+     * 
+     * All of the deduction system run in this method. For each agent :
+     * <ul>
+     * <li>we annouce the formula in its structure</li>
+     * <li>we announce the deducted formula in its structure</li>
+     * <li>retrieve knowledge on a pointed world</li>
+     * <li>get an action through agent program</li>
+     * <li>we make a reverse engineering on the action to retrieve agent knowledge
+     * in function of the agent program</li>
+     * </ul>
+     * In function of permissions, we distribute agent knowledge of one of this to
+     * others.
+     * 
+     * We return the return value of each actions and deducted formula for next
+     * iteration.
+     * 
+     * @param agents              list of agents who received announcement
+     * @param mainFormula         formula to announce
+     * @param initialObservations initial observations of each agent
+     * @param lastInterpretation  tuple returned by a previous iteration which
+     *                            contains actions returns and deducted formula
+     * @param pointedWorld        pointed world to analyse
+     * @return return values of each executed actions
+     * @throws Exception thrown when thrown in structure public
+     *                   annoucement method
+     */
+    public InterpretTuple interpret(Collection<Agent> agents, Formula mainFormula,
+            Map<Agent, Formula> initialObservations, InterpretTuple lastInterpretation, KripkeWorld pointedWorld)
+            throws Exception {
+        this.publicAnnouncement(agents, mainFormula);
+
+        if (lastInterpretation == null) {
+            lastInterpretation = new InterpretTuple(true);
+        }
+        if (!lastInterpretation.isEmpty) {
+            if (!lastInterpretation.initialObservationsIntegrated) {
+                lastInterpretation = new InterpretTuple(lastInterpretation); // to not override the base
+                for (Agent agent : agents) {
+                    Formula f = lastInterpretation.deductedFormulas.get(agent);
+                    if (initialObservations.containsKey(agent) && initialObservations.get(agent) != null) {
+                        lastInterpretation.deductedFormulas.put(agent, new And(f, initialObservations.get(agent)));
                     }
                 }
             }
-
-            // we create knowledge formula from the structure for pointed world
-            Formula knowledgeFormula = new AgentKnowledge(entry.getKey(), new And(operands));
-            if (set.size() > 1) {
-                knowledgeFormula = new Not(knowledgeFormula);
+            for (Agent agent : lastInterpretation.deductedFormulas.keySet()) {
+                System.out.println("\n\n\n");
+                System.out.println(lastInterpretation.deductedFormulas.get(agent));
+                System.out.println("Agent " + agent.getName() + " : " + this.structures.get(agent));
+                this.publicAnnouncement(agent, lastInterpretation.deductedFormulas.get(agent));
+                System.out.println("Agent " + agent.getName() + " : " + this.structures.get(agent));
             }
-
-            // action and reverse engineering
-            Action action = entry.getKey().getAssociatedAction(knowledgeFormula);
-            returns.put(entry.getKey(), action.performs(this.objects.get(action).toArray()));
-            retrievedObservation.put(entry.getKey(), entry.getKey().reverseEngineering(action));
         }
 
-        // agent self-deduction from other agent program
-        for (Map.Entry<Agent, KripkeStructure> entry : this.structures.entrySet()) {
-            System.out.println("Agent " + entry.getKey().getName() + " : " + entry.getValue());
-            Set<Formula> formulas = new HashSet<>();
-            for (Agent destAgent : this.permissions.get(entry.getKey())) { // only if agent knows destAgent program
-                formulas.add(retrievedObservation.get(destAgent));
-                System.out.println(retrievedObservation.get(destAgent));
-            }
-            entry.getValue().publicAnnouncement(new And(formulas));
-            System.out.println("Agent " + entry.getKey().getName() + " : " + entry.getValue());
-        }
+        Map<Agent, Action> actions = this.getAssociatedAction(agents, pointedWorld);
+        Map<Agent, Object> returns = this.executeAction(actions);
+        Map<Agent, Formula> observations = this.reverseEngineering(actions);
 
+        // agent self-deduction from other agent program and initial observations
+        Map<Agent, Formula> deductedFormulas = this.raisonning(agents, observations, initialObservations,
+                lastInterpretation.initialObservationsIntegrated);
+
+        // TODO: regarder pour envoyer des formules via les retours d'exécution
+        // d'actions
+
+        return new InterpretTuple(returns, deductedFormulas, lastInterpretation.initialObservationsIntegrated);
+    }
+
+    /**
+     * Announcement of a formula to an agent.
+     * 
+     * Specification to announce formulas to agents in one method.
+     * 
+     * @param agents   list of agents who received announcement
+     * @param formulas list of formula to announce
+     * @throws Exception thrown when the list sizes are not equals or by the Kripke
+     *                   structure in case of error
+     */
+    public void publicAnnouncement(List<Agent> agents, List<Formula> formulas) throws Exception {
+        if (agents.size() != formulas.size()) {
+            throw new IllegalArgumentException("agents and formulas object need to have exact same size");
+        }
+        for (int i = 0; i < agents.size(); i++) {
+            this.publicAnnouncement(agents.get(i), formulas.get(i));
+        }
+    }
+
+    /**
+     * Announcement of a formula to an agent.
+     * 
+     * Specification to announce formula to agent via a map.
+     * 
+     * @param formulas map of formula to announce to a related agent
+     * @throws Exception thrown when the list sizes are not equals or by the Kripke
+     *                   structure in case of error
+     */
+    public void publicAnnouncement(Map<Agent, Formula> formulas) throws Exception {
+        for (Map.Entry<Agent, Formula> entry : formulas.entrySet()) {
+            this.publicAnnouncement(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * Announcement of a formula to a collection of agents.
+     * 
+     * Specification to announce one formula to multiple agents.
+     * 
+     * @param agents  collection of agents who received announcement
+     * @param formula formula to announce
+     * @throws Exception thrown by the Kripke structure in case of error
+     */
+    public void publicAnnouncement(Collection<Agent> agents, Formula formula) throws Exception {
+        for (Agent agent : agents) {
+            this.publicAnnouncement(agent, formula);
+        }
+    }
+
+    /**
+     * Announcement of a formula to an agent.
+     * 
+     * @param agent   agent who received announcement
+     * @param formula formula to announce
+     * @throws Exception thrown by the Kripke structure in case of error
+     */
+    public void publicAnnouncement(Agent agent, Formula formula) throws Exception {
+        this.structures.get(agent).publicAnnouncement(formula);
+    }
+
+    /**
+     * Gets the associated action for each agent of the {@code agents} argument by
+     * retrieving its associated Kripke structure and the {@code pointedWorld}.
+     * 
+     * @param agents       collection of agents to get actions
+     * @param pointedWorld pointed world in the Kripke structure to retrieve actions
+     * @return map of agents and actions
+     * @throws Exception throws when the formula not supported evaluate operation or
+     *                   expected object not given
+     */
+    public Map<Agent, Action> getAssociatedAction(Collection<Agent> agents, KripkeWorld pointedWorld) throws Exception {
+        Map<Agent, Action> actions = new HashMap<>();
+        for (Agent agent : agents) {
+            Action action = agent.getAssociatedAction(this.structures.get(agent), pointedWorld);
+            actions.put(agent, action);
+        }
+        return actions;
+    }
+
+    /**
+     * Executes retrieving actions.
+     * 
+     * @param actions actions to execute
+     * @return returned objects of the actions executions
+     * @throws Exception thrown when an actions no longer exists in {@code objects}
+     *                   attribute or when an action received illegal arguments,
+     *                   objects cannot be processed, etc
+     */
+    public Map<Agent, Object> executeAction(Map<Agent, Action> actions) throws Exception {
+        Map<Agent, Object> returns = new HashMap<>();
+        for (Map.Entry<Agent, Action> entry : actions.entrySet()) {
+            if (!this.objects.containsKey(entry.getValue())) {
+                throw new NullPointerException("objects doesn't have key '" + entry.getValue() + "'");
+            }
+            Object r = entry.getValue().performs(this.objects.get(entry.getValue()).toArray());
+            returns.put(entry.getKey(), r);
+        }
         return returns;
+    }
+
+    /**
+     * Gets modal logic formulas for each retrieved action.
+     * 
+     * @param actions retrieved actions
+     * @return modal logic formulas
+     */
+    public Map<Agent, Formula> reverseEngineering(Map<Agent, Action> actions) {
+        Map<Agent, Formula> observations = new HashMap<>();
+        for (Map.Entry<Agent, Action> entry : actions.entrySet()) {
+            Formula f = entry.getKey().reverseEngineering(entry.getValue());
+            observations.put(entry.getKey(), f);
+        }
+        return observations;
+    }
+
+    /**
+     * Returns a formula in function of observations and agents programs knowledge
+     * for an agent.
+     * 
+     * @param agent        reasoning agent
+     * @param observations observations
+     * @return deducted formula
+     */
+    public Formula raisonning(Agent agent, Map<Agent, Formula> observations) {
+        Set<Formula> formulas = new HashSet<>();
+        for (Agent destAgent : this.permissions.get(agent)) { // only if agent knows destAgent program
+            formulas.add(observations.get(destAgent));
+        }
+        return new And(formulas);
+    }
+
+    /**
+     * Returns a map of agents and formulas in function of observations and agents
+     * programs knowledge
+     * for agents.
+     * 
+     * @param agents                       reasoning agents
+     * @param observations                 observations
+     * @param initialObservations          initial observations of each agent
+     * @param integrateInitialObservations boolean representing if we integrate
+     *                                     initial observations or not
+     * @return deducted formulas
+     */
+    public Map<Agent, Formula> raisonning(Collection<Agent> agents, Map<Agent, Formula> observations,
+            Map<Agent, Formula> initialObservations, boolean integrateInitialObservations) {
+        Map<Agent, Formula> formulas = new HashMap<>();
+        for (Agent agent : agents) {
+            Formula f = this.raisonning(agent, observations);
+            if (integrateInitialObservations) {
+                if (initialObservations.containsKey(agent) && initialObservations.get(agent) != null) {
+                    f = new And(f, initialObservations.get(agent));
+                }
+            }
+            formulas.put(agent, f);
+        }
+        return formulas;
     }
 
     /**
@@ -157,8 +357,17 @@ public class MAKBPInterpreter {
      * 
      * @return objects map
      */
-    public Map<Action, Set<Object>> getObjects() {
+    public Map<Action, List<Object>> getObjects() {
         return this.objects;
+    }
+
+    /**
+     * Gets the Kripke structures of the agents.
+     * 
+     * @return structures map
+     */
+    public Map<Agent, KripkeStructure> getStructures() {
+        return this.structures;
     }
 
     /**
@@ -169,13 +378,23 @@ public class MAKBPInterpreter {
      * @throws KripkeStructureInvalidRuntimeException thrown when the real world has
      *                                                been deleted (so no
      *                                                convergence to it)
+     * @thorws NoKripkeWorldPossibleException thrown when no world are in a
+     *         structure (impossible, need one real world)
      */
-    public boolean isFinished(KripkeWorld realWorld) throws KripkeStructureInvalidRuntimeException {
+    public boolean isFinished(KripkeWorld realWorld)
+            throws KripkeStructureInvalidRuntimeException, NoKripkeWorldPossibleException {
+        System.out.println(realWorld);
         for (KripkeStructure structure : this.structures.values()) {
+            System.out.println(structure);
+            if (structure.getWorlds().size() == 0) {
+                throw new NoKripkeWorldPossibleException();
+            }
+
             if (!structure.getWorlds().contains(realWorld)) {
                 throw new KripkeStructureInvalidRuntimeException("Real world not in at least one structure");
             }
-            if (structure.getWorlds().size() != 1) {
+
+            if (structure.getWorlds().size() > 1) {
                 return false;
             }
         }
@@ -186,9 +405,15 @@ public class MAKBPInterpreter {
      * Check if the interpreter is terminated.
      * 
      * @return boolean representing the end of the interpreter
+     * @thorws NoKripkeWorldPossibleException thrown when no world are in a
+     *         structure (impossible, need one real world)
      */
-    public boolean isFinished() {
+    public boolean isFinished() throws NoKripkeWorldPossibleException {
         for (KripkeStructure structure : this.structures.values()) {
+            if (structure.getWorlds().size() == 0) {
+                throw new NoKripkeWorldPossibleException();
+            }
+
             if (structure.getWorlds().size() > 1) {
                 return false;
             }

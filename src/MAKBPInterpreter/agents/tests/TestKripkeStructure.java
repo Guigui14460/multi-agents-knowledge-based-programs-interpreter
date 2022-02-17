@@ -124,13 +124,13 @@ public class TestKripkeStructure extends TestCase {
         KripkeStructure structure = new KripkeStructure(graph, agents);
         KripkeStructure structure2 = new KripkeStructure(new HashMap<>(graph), new HashSet<>(agents));
         KripkeStructure structure3 = new KripkeStructure(graph2, agents2);
-        KripkeStructure structure4 = new KripkeStructure(graph2, agents);
+        KripkeStructure structure4 = new KripkeStructure(graph2, new HashSet<>(agents));
 
         assertTrue(structure.equals(structure2));
         assertFalse(structure.equals(structure3));
         assertFalse(structure.equals(structure4));
         assertFalse(structure3.equals(structure2));
-        assertFalse(structure3.equals(structure4));
+        assertTrue(structure3.equals(structure4));
     }
 
     /**

@@ -1,11 +1,13 @@
 package MAKBPInterpreter.agents;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import MAKBPInterpreter.agents.exceptions.KripkeStructureInvalidRuntimeException;
 import MAKBPInterpreter.logic.Formula;
 
 /**
@@ -66,7 +68,14 @@ public class KripkeStructure {
      */
     public KripkeStructure(KripkeStructure structure) {
         this.agents = new HashSet<>(structure.agents);
-        this.graph = new HashMap<>(structure.graph);
+        this.graph = new HashMap<>();
+        for (KripkeWorld key : structure.graph.keySet()) {
+            Map<Agent, Set<KripkeWorld>> map = new HashMap<>();
+            for (Agent agent : structure.graph.get(key).keySet()) {
+                map.put(agent, new HashSet<>(structure.graph.get(key).get(agent)));
+            }
+            this.graph.put(key, map);
+        }
     }
 
     /**
@@ -167,6 +176,7 @@ public class KripkeStructure {
         Set<KripkeWorld> worldsToRemove = new HashSet<>();
         for (KripkeWorld world : this.graph.keySet()) {
             if (!world.satisfied(formula, this)) {
+                System.out.println(world + " not satisfied " + formula + "\n");
                 worldsToRemove.add(world);
             }
         }
@@ -195,39 +205,46 @@ public class KripkeStructure {
 
     @Override
     public boolean equals(Object other) {
-        if (other == this) {
+        if (this == other)
             return true;
+        if (other == null)
+            return false;
+        if (!(other instanceof KripkeStructure))
+            return false;
+
+        KripkeStructure structure = (KripkeStructure) other;
+
+        if (!this.agents.equals(structure.agents)) {
+            return false;
         }
 
-        if (other instanceof KripkeStructure) {
-            KripkeStructure structure = (KripkeStructure) other;
+        // different size
+        if (structure.graph.size() != this.graph.size()) {
+            return false;
+        }
 
-            if (!this.agents.equals(structure.agents)) {
+        // check each nodes and edges
+        for (KripkeWorld key : this.graph.keySet()) {
+            if (!structure.graph.containsKey(key)) {
                 return false;
             }
 
-            // different size
-            if (structure.graph.size() != this.graph.size()) {
-                return false;
-            }
-
-            // check each nodes and edges
-            for (KripkeWorld key : this.graph.keySet()) {
-                if (!structure.graph.containsKey(key)) {
+            for (Agent key2 : this.graph.get(key).keySet()) {
+                if (!structure.graph.get(key).containsKey(key2)) {
                     return false;
                 }
-                for (Agent key2 : this.graph.get(key).keySet()) {
-                    if (!structure.graph.get(key).containsKey(key2)) {
-                        return false;
-                    }
-                    if (!structure.graph.get(key).get(key2).equals(this.graph.get(key).get(key2))) {
-                        return false;
-                    }
+
+                if (!structure.graph.get(key).get(key2).equals(this.graph.get(key).get(key2))) {
+                    return false;
                 }
             }
-            return true;
         }
-        return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.agents, this.graph);
     }
 
     /**
@@ -242,6 +259,10 @@ public class KripkeStructure {
      * @return a set of worlds
      */
     public Set<KripkeWorld> getWorldFromOtherWorldAndAgent(KripkeWorld world, Agent agent) {
+        if (!this.graph.containsKey(world)) {
+            throw new KripkeStructureInvalidRuntimeException(
+                    "the world " + world + " no longer exists in this structure");
+        }
         return this.graph.get(world).get(agent);
     }
 

@@ -1,6 +1,7 @@
 package MAKBPInterpreter.logic;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents the negation of a formula.
@@ -29,11 +30,18 @@ public class Not implements Formula {
     public boolean equals(Object other) {
         if (this == other)
             return true;
+        if (other == null)
+            return false;
         if (!(other instanceof Not))
             return false;
 
         Not otherNot = (Not) other;
         return this.operand.equals(otherNot.operand);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.operand);
     }
 
     @Override

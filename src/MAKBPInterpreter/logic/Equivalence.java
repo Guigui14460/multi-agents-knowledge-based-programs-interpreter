@@ -1,6 +1,7 @@
 package MAKBPInterpreter.logic;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Represents the equivalence of a formula to an other.
@@ -39,11 +40,18 @@ public class Equivalence implements Formula {
     public boolean equals(Object other) {
         if (this == other)
             return true;
+        if (other == null)
+            return false;
         if (!(other instanceof Equivalence))
             return false;
 
         Equivalence otherBiImply = (Equivalence) other;
         return this.leftOperand.equals(otherBiImply.leftOperand) && this.rightOperand.equals(otherBiImply.rightOperand);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.leftOperand, this.rightOperand);
     }
 
     @Override

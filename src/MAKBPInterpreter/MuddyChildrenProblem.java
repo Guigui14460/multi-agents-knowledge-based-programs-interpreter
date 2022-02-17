@@ -18,6 +18,7 @@ import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.Diamond;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
+import MAKBPInterpreter.interpreter.InterpretTuple;
 import MAKBPInterpreter.interpreter.MAKBPInterpreter;
 import MAKBPInterpreter.logic.And;
 import MAKBPInterpreter.logic.Atom;
@@ -51,6 +52,10 @@ public class MuddyChildrenProblem {
 
     public static void problem(int n, int realWorld) {
         // if n = 3, 0 <= realWorld <= 7 (e.g: 3 = (110)_2 <=> A and B muddy)
+        if (realWorld == 0) {
+            System.out.println("Useless");
+            return;
+        }
 
         // agent creation
         List<Agent> agents = new ArrayList<>();
@@ -63,7 +68,7 @@ public class MuddyChildrenProblem {
         }
 
         // programs creation
-        Map<Action, Set<Object>> objects = new HashMap<>();
+        Map<Action, List<Object>> objects = new HashMap<>();
         Map<Agent, Set<Atom>> atomsAssociation = new HashMap<>();
         for (int i = 0; i < n; i++) {
             Atom atom = atoms.get(i);
@@ -84,7 +89,7 @@ public class MuddyChildrenProblem {
                 }
             };
             ap.put(new AgentKnowledge(agent, atom), denounceItself);
-            objects.put(denounceItself, new HashSet<>(Arrays.asList(agent, atom)));
+            objects.put(denounceItself, new ArrayList<>(Arrays.asList(agent, atom)));
 
             // action: beQuiet
             Action beQuiet = new Action() {
@@ -99,7 +104,7 @@ public class MuddyChildrenProblem {
                 }
             };
             ap.put(null, beQuiet);
-            objects.put(beQuiet, new HashSet<>(Arrays.asList(agent)));
+            objects.put(beQuiet, new ArrayList<>(Arrays.asList(agent)));
 
             atomsAssociation.put(agent, new HashSet<>(Arrays.asList(atom)));
         }
@@ -118,7 +123,6 @@ public class MuddyChildrenProblem {
         KripkeWorld realWorldObject = null;
         for (int i = 0; i < Math.pow(2, n); i++) {
             Map<Atom, Boolean> assignment = new HashMap<>();
-            // TODO: erreur à régler d'abord ici
             for (int agentAtom = 0; agentAtom < n; agentAtom++) {
                 assignment.put(atoms.get(agentAtom), ((i / ((int) Math.pow(2, agentAtom))) % 2) != 0);
             }
@@ -150,7 +154,21 @@ public class MuddyChildrenProblem {
                 }
             }
         }
-        KripkeStructure structure = new KripkeStructure(graph, agents, false, true);
+        KripkeStructure structure = new KripkeStructure(graph, agents, false, false);
+        Map<Agent, Formula> initialObservations = new HashMap<>();
+        for (Agent agent : agents) {
+            Set<Formula> formulas = new HashSet<>();
+            for (Map.Entry<Atom, Boolean> entry : realWorldObject.getAssignment().entrySet()) {
+                if (!atomsAssociation.get(agent).contains(entry.getKey())) {
+                    if (entry.getValue()) {
+                        formulas.add(entry.getKey());
+                    } else {
+                        formulas.add(new Not(entry.getKey()));
+                    }
+                }
+            }
+            initialObservations.put(agent, new AgentKnowledge(agent, new And(formulas)));
+        }
 
         Set<Formula> operands = new HashSet<>();
         for (int i = 0; i < n; i++) {
@@ -159,8 +177,7 @@ public class MuddyChildrenProblem {
         Formula formula = new Or(operands);
 
         // interpreter
-        MAKBPInterpreter interpreter = new MAKBPInterpreter(new HashSet<>(agents), structure, permissions, objects,
-                atomsAssociation);
+        MAKBPInterpreter interpreter = new MAKBPInterpreter(new HashSet<>(agents), structure, permissions, objects);
         System.out.println(structure);
         try {
             BiFunction<Boolean, KripkeWorld, Boolean> isFinished = (isRandom, rWObject) -> {
@@ -169,13 +186,17 @@ public class MuddyChildrenProblem {
                 }
                 return interpreter.isFinished(rWObject);
             };
+            InterpretTuple tuple = new InterpretTuple(false);
             int k = 0;
             while (!isFinished.apply(realWorldIsRandom, realWorldObject)) {
                 k++;
                 System.out.println("====================== k = " + Integer.toString(k) + " ======================");
-                interpreter.publicAnnouncement(formula, realWorldObject);
+                // interpreter.interpret(agents, formula, initialObservations, realWorldObject);
+                tuple = interpreter.interpret(agents, formula, initialObservations, tuple,
+                        realWorldObject); // TODO: à fix
                 Thread.sleep(1000);
             }
+            System.out.println("Found in k = " + k);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);

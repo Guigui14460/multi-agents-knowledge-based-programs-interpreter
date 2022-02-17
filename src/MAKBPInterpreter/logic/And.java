@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -61,6 +62,8 @@ public class And implements Formula {
     public boolean equals(Object other) {
         if (this == other)
             return true;
+        if (other == null)
+            return false;
         if (!(other instanceof And))
             return false;
 
@@ -80,6 +83,11 @@ public class And implements Formula {
             }
         }
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.operands);
     }
 
     @Override
@@ -136,7 +144,9 @@ public class And implements Formula {
     public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
         boolean result = true;
         for (Formula formula : this.operands) {
-            result = result && formula.evaluate(state, objects);
+            boolean res = formula.evaluate(state, objects);
+            System.out.println(formula + " : " + res);
+            result = result && res;
         }
         return result;
     }

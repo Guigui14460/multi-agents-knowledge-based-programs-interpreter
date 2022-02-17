@@ -1,6 +1,7 @@
 package MAKBPInterpreter.agents;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import MAKBPInterpreter.logic.Atom;
@@ -34,12 +35,21 @@ public class CommonKnowledge implements Formula {
 
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof CommonKnowledge)) {
+        if (this == other)
+            return true;
+        if (other == null)
             return false;
-        }
+        if (!(other instanceof CommonKnowledge))
+            return false;
+
         CommonKnowledge otherCommonKnowledge = (CommonKnowledge) other;
         return otherCommonKnowledge.agents.equals(this.agents)
                 && this.innerFormula.equals(otherCommonKnowledge.innerFormula);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.agents, this.innerFormula);
     }
 
     @Override

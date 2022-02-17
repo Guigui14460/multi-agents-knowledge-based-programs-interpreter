@@ -4,7 +4,7 @@ package MAKBPInterpreter.agents.exceptions;
  * Exception class called when no world in a
  * {@link MAKBPInterpreter.agents.KripkeStructure} instance is possible.
  */
-public class NoKripkeWorldPossibleException extends Exception {
+public class NoKripkeWorldPossibleException extends RuntimeException {
     /**
      * Constructs a new exception with the specified detail message. The cause is
      * not initialized, and may subsequently be initialized by a call to
