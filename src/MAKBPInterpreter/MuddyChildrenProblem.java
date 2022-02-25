@@ -18,7 +18,6 @@ import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.Diamond;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
-import MAKBPInterpreter.interpreter.InterpretTuple;
 import MAKBPInterpreter.interpreter.MAKBPInterpreter;
 import MAKBPInterpreter.logic.And;
 import MAKBPInterpreter.logic.Atom;
@@ -26,39 +25,55 @@ import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
 import MAKBPInterpreter.logic.Or;
 
+/**
+ * Class representing the problem of muddy children.
+ * 
+ * The problem is as follows:
+ * <ul>
+ * <li>the children go to play but the father has warned them not to get
+ * dirty;</li>
+ * <li>they come back and if one of them is dirty, the father says "at least
+ * one of you is dirty".</li>
+ * </ul>
+ * 
+ * The goal is this: to make sure that only the children who know they are dirty
+ * have to tell on each other. To do this, the children know the condition of
+ * the other children's foreheads, but a considered child does not know his
+ * condition. Therefore, he has to reason about the actions and programs of the
+ * other children in order to know if he himself is dirty or not.
+ */
 public class MuddyChildrenProblem {
-    final static Action denounceItself = new Action() {
-        @Override
-        public Object performs(Object... objects) throws IllegalArgumentException {
-            if (objects.length == 0) {
-                throw new IllegalArgumentException("Need at least the agent object");
-            }
-            Agent agent = (Agent) objects[0];
-            System.out.println("L'agent " + agent.getName() + " s'est dénoncé");
-            return null;
-        }
-    };
-    final static Action beQuiet = new Action() {
-        @Override
-        public Object performs(Object... objects) throws IllegalArgumentException {
-            if (objects.length == 0) {
-                throw new IllegalArgumentException("Need at least the agent object");
-            }
-            Agent agent = (Agent) objects[0];
-            System.out.println("L'agent " + agent.getName() + " s'est tait");
-            return null;
-        }
-    };
-
-    public static void problem(int n, int realWorld) {
-        // if n = 3, 0 <= realWorld <= 7 (e.g: 3 = (110)_2 <=> A and B muddy)
-        if (realWorld == 0) {
-            System.out.println("Useless");
-            return;
+    /**
+     * Generalized problem implementing the multi-agent knowledge program
+     * interpreter.
+     * To encode the real world, we pass a decimal number which
+     * will be then decoded in a binary number allowing to
+     * create the worlds in an automatic way.
+     * 
+     * For example, if n = 4, realWorld will be between 0 and 15
+     * included. If we choose realWorld = 13 ( = (1101)_2 ), the real world
+     * will be the world where :
+     * <ul>
+     * <li>agents 0, 2, 3 are dirty</li>
+     * <li>agent 1 is clean</li>
+     * </ul>
+     * 
+     * @param n            number of children
+     * @param realWorld    real world encoded in decimal
+     * @param maxIteration maximum number of iteration to avoid an infinite while
+     *                     loop
+     * 
+     * @throws IllegalArgumentException thrown the real world can't exists
+     */
+    public static void problem(int n, int realWorld, int maxIteration) {
+        if (realWorld < 0 || realWorld > Math.pow(2, n)) {
+            throw new IllegalArgumentException(
+                    "The chosen real world can't exists! Please choose one between 0 and 2^" + Integer.toString(n));
         }
 
         // agent creation
         List<Agent> agents = new ArrayList<>();
+        Set<Agent> muddyAgents = new HashSet<>();
         List<AgentProgram> agentPrograms = new ArrayList<>();
         List<Atom> atoms = new ArrayList<>();
         for (int i = 0; i < n; i++) {
@@ -83,9 +98,9 @@ public class MuddyChildrenProblem {
                         throw new IllegalArgumentException("Need the agent object and a formula");
                     }
                     Agent agent = (Agent) objects[0];
-                    Atom atom = (Atom) objects[1];
+                    // Atom atom = (Atom) objects[1];
                     System.out.println("L'agent " + agent.getName() + " s'est dénoncé");
-                    return atom;
+                    return agent;
                 }
             };
             ap.put(new AgentKnowledge(agent, atom), denounceItself);
@@ -124,6 +139,12 @@ public class MuddyChildrenProblem {
         for (int i = 0; i < Math.pow(2, n); i++) {
             Map<Atom, Boolean> assignment = new HashMap<>();
             for (int agentAtom = 0; agentAtom < n; agentAtom++) {
+                // for the stop condition
+                if (i == realWorld && ((i / ((int) Math.pow(2, agentAtom))) % 2) != 0) {
+                    muddyAgents.add(agents.get(agentAtom));
+                }
+
+                // for the world assignment
                 assignment.put(atoms.get(agentAtom), ((i / ((int) Math.pow(2, agentAtom))) % 2) != 0);
             }
             KripkeWorld world = new KripkeWorld(assignment);
@@ -155,54 +176,98 @@ public class MuddyChildrenProblem {
             }
         }
         KripkeStructure structure = new KripkeStructure(graph, agents, false, false);
-        Map<Agent, Formula> initialObservations = new HashMap<>();
-        for (Agent agent : agents) {
-            Set<Formula> formulas = new HashSet<>();
-            for (Map.Entry<Atom, Boolean> entry : realWorldObject.getAssignment().entrySet()) {
-                if (!atomsAssociation.get(agent).contains(entry.getKey())) {
-                    if (entry.getValue()) {
-                        formulas.add(entry.getKey());
-                    } else {
-                        formulas.add(new Not(entry.getKey()));
-                    }
-                }
-            }
-            initialObservations.put(agent, new AgentKnowledge(agent, new And(formulas)));
-        }
 
+        // father formula
         Set<Formula> operands = new HashSet<>();
         for (int i = 0; i < n; i++) {
             operands.add(atoms.get(i));
         }
-        Formula formula = new Or(operands);
+        Formula fatherFormula = new Or(operands);
 
         // interpreter
         MAKBPInterpreter interpreter = new MAKBPInterpreter(new HashSet<>(agents), structure, permissions, objects);
-        System.out.println(structure);
+        System.out.println("Initial structure : " + structure);
+        System.out.println("Real world : " + realWorld);
         try {
+            // check if all kripkeworld contains only
             BiFunction<Boolean, KripkeWorld, Boolean> isFinished = (isRandom, rWObject) -> {
                 if (isRandom) {
                     return interpreter.isFinished();
                 }
                 return interpreter.isFinished(rWObject);
             };
-            InterpretTuple tuple = new InterpretTuple(false);
+
+            BiFunction<Map<Agent, Object>, Set<Agent>, Boolean> allMuddyChildrenDenouncedThemselves = (returns,
+                    muddyAgentsSet) -> {
+                if (returns.size() == 0) {
+                    return muddyAgentsSet.size() == 0;
+                }
+                for (Agent agent : muddyAgentsSet) {
+                    if (!returns.containsKey(agent) || returns.get(agent) == null) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+
             int k = 0;
-            while (!isFinished.apply(realWorldIsRandom, realWorldObject)) {
+            Map<Agent, Object> returns = new HashMap<>();
+            Map<Agent, Formula> deductions = new HashMap<>();
+            while (!allMuddyChildrenDenouncedThemselves.apply(returns, muddyAgents)
+                    && !isFinished.apply(realWorldIsRandom, realWorldObject) && (k < maxIteration)) {
                 k++;
                 System.out.println("====================== k = " + Integer.toString(k) + " ======================");
-                // interpreter.interpret(agents, formula, initialObservations, realWorldObject);
-                tuple = interpreter.interpret(agents, formula, initialObservations, tuple,
-                        realWorldObject); // TODO: à fix
+
+                // removing worlds from father and deducted formulas
+                System.out.println("Before announcements : " + interpreter.getStructures().toString());
+                interpreter.publicAnnouncement(agents, fatherFormula);
+                interpreter.publicAnnouncement(deductions);
+                System.out.println("After announcements : " + interpreter.getStructures().toString());
+
+                // actions execution
+                Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, realWorldObject);
+                returns = interpreter.executeAction(actions);
+
+                // reasoning system
+                deductions = interpreter.reverseEngineering(actions);
+                deductions = interpreter.reasoning(agents, deductions);
+
                 Thread.sleep(1000);
             }
-            System.out.println("Found in k = " + k);
+
+            System.out.println("\n\n\nFound in k = " + k);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         }
     }
 
+    final static Action denounceItself = new Action() {
+        @Override
+        public Object performs(Object... objects) throws IllegalArgumentException {
+            if (objects.length == 0) {
+                throw new IllegalArgumentException("Need at least the agent object");
+            }
+            Agent agent = (Agent) objects[0];
+            System.out.println("L'agent " + agent.getName() + " s'est dénoncé");
+            return null;
+        }
+    };
+    final static Action beQuiet = new Action() {
+        @Override
+        public Object performs(Object... objects) throws IllegalArgumentException {
+            if (objects.length == 0) {
+                throw new IllegalArgumentException("Need at least the agent object");
+            }
+            Agent agent = (Agent) objects[0];
+            System.out.println("L'agent " + agent.getName() + " s'est tait");
+            return null;
+        }
+    };
+
+    /**
+     * Problem with two children and one child among them is dirty.
+     */
     public static void problemN2K1() {
         System.out.println("Muddy Children Problem (n=2, k=1)");
 
@@ -312,6 +377,9 @@ public class MuddyChildrenProblem {
                 + new HashSet<>(Arrays.asList(realWorld)).equals(structure.getWorlds()));
     }
 
+    /**
+     * Problem with two children and both are dirty.
+     */
     public static void problemN2K2() {
         System.out.println("Muddy Children Problem (n=2, k=2)");
 
@@ -422,6 +490,9 @@ public class MuddyChildrenProblem {
                 + new HashSet<>(Arrays.asList(realWorld)).equals(structure.getWorlds()));
     }
 
+    /**
+     * Problem with three children and thow child among them are dirty.
+     */
     public static void problemN3K2() {
         System.out.println("Muddy Children Problem (n=3, k=2)");
 
@@ -625,6 +696,9 @@ public class MuddyChildrenProblem {
                 + new HashSet<>(Arrays.asList(realWorld)).equals(structure.getWorlds()));
     }
 
+    /**
+     * Problem with three children and are all dirty.
+     */
     public static void problemN3K3() {
         System.out.println("Muddy Children Problem (n=3, k=3)");
 

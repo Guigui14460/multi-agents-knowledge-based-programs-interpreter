@@ -263,6 +263,7 @@ public class TestMAKBPInterpreter extends TestCase {
         node.put(agentB, new HashSet<>(Arrays.asList(world1)));
         graph.put(world1, new HashMap<>(node));
         node.put(agentB, new HashSet<>(Arrays.asList(world2)));
+        node.put(agentA, new HashSet<>(Arrays.asList(world1, world2)));
         graph.put(world2, new HashMap<>(node));
         KripkeStructure structure = new KripkeStructure(graph, agents, false, false);
 
@@ -301,7 +302,7 @@ public class TestMAKBPInterpreter extends TestCase {
                 Formula formula = new Not(atom1);
                 interpreter.publicAnnouncement(agentB, formula);
                 Map<Agent, Action> actions = new HashMap<>();
-                actions.put(agentA, incF_agentA);
+                actions.put(agentA, null);
                 actions.put(agentB, incF_agentB);
                 assertEquals("Must be equals", actions, interpreter.getAssociatedAction(agents, pointedWorld));
             } catch (Exception e) {
@@ -315,7 +316,7 @@ public class TestMAKBPInterpreter extends TestCase {
                 KripkeWorld pointedWorld = world1;
                 Formula formula = new Not(atom1);
                 interpreter.publicAnnouncement(agents, formula);
-                assertThrows("Exception must be thrown", NullPointerException.class,
+                assertThrows("Exception must be thrown", KripkeStructureInvalidRuntimeException.class,
                         () -> interpreter.getAssociatedAction(agents, pointedWorld));
             } catch (Exception e) {
                 throw e;
@@ -327,7 +328,7 @@ public class TestMAKBPInterpreter extends TestCase {
      * Tests the
      * {@link MAKBPInterpreter.interpreter.MAKBPInterpreter#executeAction(java.util.Map)}
      * method.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -376,6 +377,7 @@ public class TestMAKBPInterpreter extends TestCase {
         node.put(agentB, new HashSet<>(Arrays.asList(world1)));
         graph.put(world1, new HashMap<>(node));
         node.put(agentB, new HashSet<>(Arrays.asList(world2)));
+        node.put(agentA, new HashSet<>(Arrays.asList(world1, world2)));
         graph.put(world2, new HashMap<>(node));
         KripkeStructure structure = new KripkeStructure(graph, agents, false, false);
 
@@ -424,8 +426,8 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 assertEquals(1, incP_agentA.getAcc());
-                assertEquals(1, incF_agentA.getAcc());
-                assertEquals(1, incNull_agentA.getAcc());
+                assertEquals(0, incF_agentA.getAcc());
+                assertEquals(2, incNull_agentA.getAcc());
                 assertEquals(2, incP_agentB.getAcc());
                 assertEquals(1, incF_agentB.getAcc());
                 assertEquals(0, incNull_agentB.getAcc());
@@ -439,7 +441,7 @@ public class TestMAKBPInterpreter extends TestCase {
      * Tests the
      * {@link MAKBPInterpreter.interpreter.MAKBPInterpreter#reverseEngineering(java.util.Map)}
      * method.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -488,6 +490,7 @@ public class TestMAKBPInterpreter extends TestCase {
         node.put(agentB, new HashSet<>(Arrays.asList(world1)));
         graph.put(world1, new HashMap<>(node));
         node.put(agentB, new HashSet<>(Arrays.asList(world2)));
+        node.put(agentA, new HashSet<>(Arrays.asList(world1, world2)));
         graph.put(world2, new HashMap<>(node));
         KripkeStructure structure = new KripkeStructure(graph, agents, false, false);
 
@@ -532,7 +535,7 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = new HashMap<>();
-                reversedEng.put(agentA, KaF);
+                reversedEng.put(agentA, new And(new Not(KaP), new Not(KaF)));
                 reversedEng.put(agentB, KbF);
                 assertEquals("Must be equals", reversedEng, interpreter.reverseEngineering(actions));
             } catch (Exception e) {
@@ -543,13 +546,13 @@ public class TestMAKBPInterpreter extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.interpreter.MAKBPInterpreter#raisonning(MAKBPInterpreter.agents.Agent, java.util.Map)}
+     * {@link MAKBPInterpreter.interpreter.MAKBPInterpreter#reasoning(MAKBPInterpreter.agents.Agent, java.util.Map)}
      * method.
-     * 
+     *
      * @throws Exception
      */
     @Test
-    public void testRaisonning() throws Exception {
+    public void testreasoning() throws Exception {
         Atom atom1 = new Atom("piece on heads");
         Agent agentA = new Agent("a", new AgentProgram());
         AgentKnowledge KaP = new AgentKnowledge(agentA, atom1);
@@ -594,6 +597,7 @@ public class TestMAKBPInterpreter extends TestCase {
         node.put(agentB, new HashSet<>(Arrays.asList(world1)));
         graph.put(world1, new HashMap<>(node));
         node.put(agentB, new HashSet<>(Arrays.asList(world2)));
+        node.put(agentA, new HashSet<>(Arrays.asList(world1, world2)));
         graph.put(world2, new HashMap<>(node));
         KripkeStructure structure = new KripkeStructure(graph, agents, false, false);
 
@@ -606,13 +610,13 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = interpreter.reverseEngineering(actions);
-                assertEquals("Must be equals", new And(KbP), interpreter.raisonning(agentA, reversedEng));
+                assertEquals("Must be equals", new And(KbP), interpreter.reasoning(agentA, reversedEng));
                 assertEquals("Must be equals", new And(new And(new Not(KaP), new Not(KaF))),
-                        interpreter.raisonning(agentB, reversedEng));
+                        interpreter.reasoning(agentB, reversedEng));
 
                 permissions.put(agentB, new HashSet<>());
-                assertEquals("Must be equals", new And(KbP), interpreter.raisonning(agentA, reversedEng));
-                assertEquals("Must be equals", new And(), interpreter.raisonning(agentB, reversedEng));
+                assertEquals("Must be equals", new And(KbP), interpreter.reasoning(agentA, reversedEng));
+                assertEquals("Must be equals", new And(), interpreter.reasoning(agentB, reversedEng));
             } catch (Exception e) {
                 throw e;
             }
@@ -629,11 +633,11 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = interpreter.reverseEngineering(actions);
-                assertEquals("Must be equals", new And(KbP), interpreter.raisonning(agentA, reversedEng));
-                assertEquals("Must be equals", new And(KaP), interpreter.raisonning(agentB, reversedEng));
+                assertEquals("Must be equals", new And(KbP), interpreter.reasoning(agentA, reversedEng));
+                assertEquals("Must be equals", new And(KaP), interpreter.reasoning(agentB, reversedEng));
 
                 permissions.put(agentB, new HashSet<>(Arrays.asList(agentA, agentB)));
-                assertEquals("Must be equals", new And(KaP, KbP), interpreter.raisonning(agentB, reversedEng));
+                assertEquals("Must be equals", new And(KaP, KbP), interpreter.reasoning(agentB, reversedEng));
             } catch (Exception e) {
                 throw e;
             }
@@ -650,11 +654,9 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = interpreter.reverseEngineering(actions);
-                assertEquals("Must be equals", new And(KbF), interpreter.raisonning(agentA, reversedEng));
-                assertEquals("Must be equals", new And(KaF), interpreter.raisonning(agentB, reversedEng));
-
-                permissions.put(agentA, new HashSet<>(Arrays.asList(agentA)));
-                assertEquals("Must be equals", new And(KaF), interpreter.raisonning(agentA, reversedEng));
+                assertEquals("Must be equals", new And(KbF), interpreter.reasoning(agentA, reversedEng));
+                assertEquals("Must be equals", new And(new And(new Not(KaP), new Not(KaF))),
+                        interpreter.reasoning(agentB, reversedEng));
             } catch (Exception e) {
                 throw e;
             }
@@ -667,7 +669,7 @@ public class TestMAKBPInterpreter extends TestCase {
      * and
      * {@link MAKBPInterpreter.interpreter.MAKBPInterpreter#isFinished()}
      * methods.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -716,6 +718,7 @@ public class TestMAKBPInterpreter extends TestCase {
         node.put(agentB, new HashSet<>(Arrays.asList(world1)));
         graph.put(world1, new HashMap<>(node));
         node.put(agentB, new HashSet<>(Arrays.asList(world2)));
+        node.put(agentA, new HashSet<>(Arrays.asList(world1, world2)));
         graph.put(world2, new HashMap<>(node));
         KripkeStructure structure = new KripkeStructure(graph, agents, false, false);
 
@@ -729,7 +732,7 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = interpreter.reverseEngineering(actions);
-                interpreter.publicAnnouncement(agentA, interpreter.raisonning(agentA, reversedEng));
+                interpreter.publicAnnouncement(agentA, interpreter.reasoning(agentA, reversedEng));
 
                 assertFalse("Must be false", interpreter.isFinished(pointedWorld));
                 assertFalse("Must be false", interpreter.isFinished());
@@ -738,8 +741,8 @@ public class TestMAKBPInterpreter extends TestCase {
                 actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 reversedEng = interpreter.reverseEngineering(actions);
-                interpreter.publicAnnouncement(agentA, interpreter.raisonning(agentA, reversedEng));
-                interpreter.publicAnnouncement(agentB, interpreter.raisonning(agentB, reversedEng));
+                interpreter.publicAnnouncement(agentA, interpreter.reasoning(agentA, reversedEng));
+                interpreter.publicAnnouncement(agentB, interpreter.reasoning(agentB, reversedEng));
 
                 assertTrue("Must be true", interpreter.isFinished(pointedWorld));
                 assertTrue("Must be true", interpreter.isFinished());
@@ -758,15 +761,15 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = interpreter.reverseEngineering(actions);
-                interpreter.publicAnnouncement(agentA, interpreter.raisonning(agentA, reversedEng));
-                interpreter.publicAnnouncement(agentB, interpreter.raisonning(agentB, reversedEng));
+                interpreter.publicAnnouncement(agentA, interpreter.reasoning(agentA, reversedEng));
+                interpreter.publicAnnouncement(agentB, interpreter.reasoning(agentB, reversedEng));
 
                 interpreter.publicAnnouncement(agents, new Not(atom1));
 
                 assertThrows("An exception must be thrown", NoKripkeWorldPossibleException.class,
                         () -> interpreter.isFinished(pointedWorld));
-                assertThrows("An exception must be thrown", NoKripkeWorldPossibleException.class,
-                        () -> interpreter.isFinished());
+                assertThrows("An exception must be thrown",
+                        NoKripkeWorldPossibleException.class, () -> interpreter.isFinished());
             } catch (Exception e) {
                 throw e;
             }
@@ -782,152 +785,13 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = interpreter.reverseEngineering(actions);
-                interpreter.publicAnnouncement(agentA, interpreter.raisonning(agentA, reversedEng));
-                interpreter.publicAnnouncement(agentB, interpreter.raisonning(agentB, reversedEng));
+                interpreter.publicAnnouncement(agentA, interpreter.reasoning(agentA, reversedEng));
+                interpreter.publicAnnouncement(agentB, interpreter.reasoning(agentB, reversedEng));
 
                 KripkeWorld pointedWorld2 = world2;
 
                 assertThrows("An exception must be thrown", KripkeStructureInvalidRuntimeException.class,
                         () -> interpreter.isFinished(pointedWorld2));
-                assertTrue("Must be true", interpreter.isFinished());
-            } catch (Exception e) {
-                throw e;
-            }
-        }
-    }
-
-    /**
-     * Tests the
-     * {@link MAKBPInterpreter.interpreter.MAKBPInterpreter#interpret(java.util.Collection, MAKBPInterpreter.logic.Formula, java.util.Map, MAKBPInterpreter.agents.KripkeWorld)}
-     * method.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testInterpret() throws Exception {
-        Atom atom1 = new Atom("piece on heads");
-        Agent agentA = new Agent("a", new AgentProgram());
-        AgentKnowledge KaP = new AgentKnowledge(agentA, atom1);
-        AgentKnowledge KaF = new AgentKnowledge(agentA, new Not(atom1));
-        Incrementer incP_agentA = new Incrementer();
-        Incrementer incF_agentA = new Incrementer();
-        Incrementer incNull_agentA = new Incrementer();
-        agentA.getProgram().put(KaP, incP_agentA);
-        agentA.getProgram().put(KaF, incF_agentA);
-        agentA.getProgram().put(null, incNull_agentA);
-        Agent agentB = new Agent("b", new AgentProgram());
-        AgentKnowledge KbP = new AgentKnowledge(agentB, atom1);
-        AgentKnowledge KbF = new AgentKnowledge(agentB, new Not(atom1));
-        Incrementer incP_agentB = new Incrementer();
-        Incrementer incF_agentB = new Incrementer();
-        Incrementer incNull_agentB = new Incrementer();
-        agentB.getProgram().put(KbP, incP_agentB);
-        agentB.getProgram().put(KbF, incF_agentB);
-        agentB.getProgram().put(null, incNull_agentB);
-
-        Set<Agent> agents = new HashSet<>(Arrays.asList(agentA, agentB));
-        Map<Agent, Set<Agent>> permissions = new HashMap<>();
-        permissions.put(agentA, new HashSet<>(Arrays.asList(agentB)));
-        permissions.put(agentB, new HashSet<>(Arrays.asList(agentA)));
-        Map<Action, List<Object>> objects = new HashMap<>();
-        objects.put(incP_agentA, new ArrayList<>());
-        objects.put(incF_agentA, new ArrayList<>());
-        objects.put(incNull_agentA, new ArrayList<>());
-        objects.put(incP_agentB, new ArrayList<>());
-        objects.put(incF_agentB, new ArrayList<>());
-        objects.put(incNull_agentB, new ArrayList<>());
-
-        Map<Atom, Boolean> assignementWorld1 = new HashMap<>();
-        assignementWorld1.put(atom1, true);
-        Map<Atom, Boolean> assignementWorld2 = new HashMap<>();
-        assignementWorld2.put(atom1, false);
-        KripkeWorld world1 = new KripkeWorld(assignementWorld1);
-        KripkeWorld world2 = new KripkeWorld(assignementWorld2);
-        Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph = new HashMap<>();
-        Map<Agent, Set<KripkeWorld>> node = new HashMap<>();
-        node.put(agentA, new HashSet<>(Arrays.asList(world1, world2)));
-        node.put(agentB, new HashSet<>(Arrays.asList(world1)));
-        graph.put(world1, new HashMap<>(node));
-        node.put(agentB, new HashSet<>(Arrays.asList(world2)));
-        graph.put(world2, new HashMap<>(node));
-        KripkeStructure structure = new KripkeStructure(graph, agents, false, false);
-        Map<Agent, Formula> initialObservations = new HashMap<>();
-        initialObservations.put(agentA, null);
-        initialObservations.put(agentB, null);
-
-        {
-            try {
-                MAKBPInterpreter interpreter = new MAKBPInterpreter(agents, structure, permissions, objects);
-                KripkeWorld pointedWorld = world1;
-                Formula formula = atom1;
-
-                Set<Agent> agentsA = new HashSet<>(agents);
-                agentsA.remove(agentB);
-                interpreter.interpret(agentsA, formula, initialObservations, pointedWorld, true);
-                assertFalse("Must be false", interpreter.isFinished(pointedWorld));
-                assertFalse("Must be false", interpreter.isFinished());
-
-                interpreter.interpret(agents, formula, initialObservations, pointedWorld, true);
-                assertTrue("Must be true", interpreter.isFinished(pointedWorld));
-                assertTrue("Must be true", interpreter.isFinished());
-            } catch (Exception e) {
-                throw e;
-            }
-        }
-
-        {
-            try {
-                MAKBPInterpreter interpreter = new MAKBPInterpreter(agents, structure, permissions, objects);
-                KripkeWorld pointedWorld = world1;
-                Formula formula = atom1;
-
-                interpreter.interpret(agents, formula, initialObservations, pointedWorld, true);
-                assertTrue("Must be true", interpreter.isFinished(pointedWorld));
-                assertTrue("Must be true", interpreter.isFinished());
-
-                assertThrows("An exception must be thrown", NullPointerException.class,
-                        () -> interpreter.interpret(agents, new Not(atom1), initialObservations, pointedWorld, true));
-            } catch (Exception e) {
-                throw e;
-            }
-        }
-
-        {
-            try {
-                MAKBPInterpreter interpreter = new MAKBPInterpreter(agents, structure, permissions, objects);
-                KripkeWorld pointedWorld = world1;
-                Formula formula = atom1;
-
-                interpreter.interpret(agents, formula, initialObservations, pointedWorld, true);
-                assertTrue("Must be true", interpreter.isFinished(pointedWorld));
-                assertTrue("Must be true", interpreter.isFinished());
-
-                KripkeWorld pointedWorld2 = world2;
-                assertThrows("An exception must be thrown", NullPointerException.class,
-                        () -> interpreter.interpret(agents, formula, initialObservations, pointedWorld2, true));
-                assertTrue("Must be true", interpreter.isFinished());
-            } catch (Exception e) {
-                throw e;
-            }
-        }
-
-        {
-            try {
-                MAKBPInterpreter interpreter = new MAKBPInterpreter(agents, structure, permissions, objects);
-                KripkeWorld pointedWorld = world1;
-                Formula formula = atom1;
-                initialObservations.put(agentA, formula);
-
-                Set<Agent> agentsA = new HashSet<>(agents);
-                agentsA.remove(agentB);
-                interpreter.interpret(agentsA, formula, initialObservations, pointedWorld, true);
-                assertFalse("Must be false", interpreter.isFinished(pointedWorld));
-                assertFalse("Must be false", interpreter.isFinished());
-                assertEquals("Must be equals", structure, interpreter.getStructures().get(agentB));
-                assertNotEquals("Must not be equals", structure, interpreter.getStructures().get(agentA));
-
-                interpreter.interpret(agents, formula, initialObservations, pointedWorld, true);
-                assertTrue("Must be true", interpreter.isFinished(pointedWorld));
                 assertTrue("Must be true", interpreter.isFinished());
             } catch (Exception e) {
                 throw e;

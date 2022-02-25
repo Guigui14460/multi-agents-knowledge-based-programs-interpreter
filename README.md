@@ -25,3 +25,8 @@ $ ant run_dist
 ```bash
 $ ant test
 ```
+
+- Pour connaître la liste complète des cibles ANT :
+```bash
+$ ant -p
+```

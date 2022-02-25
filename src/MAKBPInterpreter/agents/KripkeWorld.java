@@ -60,7 +60,6 @@ public class KripkeWorld {
      * @throws Exception thrown if an illegal argument is passed
      */
     public boolean satisfied(Formula formula, KripkeStructure structure) throws Exception {
-        System.out.println("--------- World Evaluation : " + this);
         return formula.evaluate(this.assignment, this, structure);
     }
 

@@ -62,131 +62,7 @@ public class MAKBPInterpreter {
     }
 
     /**
-     * Annoucement of a public formula.
-     * 
-     * All of the deduction system run in this method. For each agent :
-     * <ul>
-     * <li>we annouce the formula in its structure</li>
-     * <li>retrieve knowledge on a pointed world</li>
-     * <li>get an action through agent program</li>
-     * <li>we make a reverse engineering on the action to retrieve agent knowledge
-     * in function of the agent program</li>
-     * </ul>
-     * In function of permissions, we distribute agent knowledge of one of this to
-     * others.
-     * 
-     * We return the return value of each actions.
-     * 
-     * @param agents                       list of agents who received announcement
-     * @param mainFormula                  formula to announce
-     * @param initialObservations          initial observations of each agent
-     * @param pointedWorld                 pointed world to analyse
-     * @param integrateInitialObservations boolean representing if we integrate
-     *                                     initial observations or not
-     * @return return values of each executed actions
-     * @throws Exception            thrown when thrown in structure public
-     *                              annoucement method
-     * @throws NullPointerException thrown when the {@code pointedWorld} is no more
-     *                              in at least one of the Kripke structures
-     */
-    public Map<Agent, Object> interpret(Collection<Agent> agents, Formula mainFormula,
-            Map<Agent, Formula> initialObservations, KripkeWorld pointedWorld, boolean integrateInitialObservations)
-            throws Exception {
-        this.publicAnnouncement(agents, mainFormula);
-        Map<Agent, Action> actions = this.getAssociatedAction(agents, pointedWorld);
-        Map<Agent, Object> returns = this.executeAction(actions);
-        Map<Agent, Formula> observations = this.reverseEngineering(actions);
-
-        // agent self-deduction from other agent program
-        for (Agent agent : agents) {
-            System.out.println("Agent " + agent.getName() + " : " + this.structures.get(agent));
-
-            Formula f = this.raisonning(agent, observations);
-            if (initialObservations.containsKey(agent) && initialObservations.get(agent) != null) {
-                f = new And(f, initialObservations.get(agent));
-            }
-            this.publicAnnouncement(agent, f);
-
-            System.out.println("Agent " + agent.getName() + " : " + this.structures.get(agent));
-        }
-        Map<Agent, Formula> formulas = this.raisonning(agents, observations, initialObservations,
-                integrateInitialObservations);
-        this.publicAnnouncement(formulas);
-
-        return returns;
-    }
-
-    /**
-     * Annoucement of a public formula.
-     * 
-     * All of the deduction system run in this method. For each agent :
-     * <ul>
-     * <li>we annouce the formula in its structure</li>
-     * <li>we announce the deducted formula in its structure</li>
-     * <li>retrieve knowledge on a pointed world</li>
-     * <li>get an action through agent program</li>
-     * <li>we make a reverse engineering on the action to retrieve agent knowledge
-     * in function of the agent program</li>
-     * </ul>
-     * In function of permissions, we distribute agent knowledge of one of this to
-     * others.
-     * 
-     * We return the return value of each actions and deducted formula for next
-     * iteration.
-     * 
-     * @param agents              list of agents who received announcement
-     * @param mainFormula         formula to announce
-     * @param initialObservations initial observations of each agent
-     * @param lastInterpretation  tuple returned by a previous iteration which
-     *                            contains actions returns and deducted formula
-     * @param pointedWorld        pointed world to analyse
-     * @return return values of each executed actions
-     * @throws Exception thrown when thrown in structure public
-     *                   annoucement method
-     */
-    public InterpretTuple interpret(Collection<Agent> agents, Formula mainFormula,
-            Map<Agent, Formula> initialObservations, InterpretTuple lastInterpretation, KripkeWorld pointedWorld)
-            throws Exception {
-        this.publicAnnouncement(agents, mainFormula);
-
-        if (lastInterpretation == null) {
-            lastInterpretation = new InterpretTuple(true);
-        }
-        if (!lastInterpretation.isEmpty) {
-            if (!lastInterpretation.initialObservationsIntegrated) {
-                lastInterpretation = new InterpretTuple(lastInterpretation); // to not override the base
-                for (Agent agent : agents) {
-                    Formula f = lastInterpretation.deductedFormulas.get(agent);
-                    if (initialObservations.containsKey(agent) && initialObservations.get(agent) != null) {
-                        lastInterpretation.deductedFormulas.put(agent, new And(f, initialObservations.get(agent)));
-                    }
-                }
-            }
-            for (Agent agent : lastInterpretation.deductedFormulas.keySet()) {
-                System.out.println("\n\n\n");
-                System.out.println(lastInterpretation.deductedFormulas.get(agent));
-                System.out.println("Agent " + agent.getName() + " : " + this.structures.get(agent));
-                this.publicAnnouncement(agent, lastInterpretation.deductedFormulas.get(agent));
-                System.out.println("Agent " + agent.getName() + " : " + this.structures.get(agent));
-            }
-        }
-
-        Map<Agent, Action> actions = this.getAssociatedAction(agents, pointedWorld);
-        Map<Agent, Object> returns = this.executeAction(actions);
-        Map<Agent, Formula> observations = this.reverseEngineering(actions);
-
-        // agent self-deduction from other agent program and initial observations
-        Map<Agent, Formula> deductedFormulas = this.raisonning(agents, observations, initialObservations,
-                lastInterpretation.initialObservationsIntegrated);
-
-        // TODO: regarder pour envoyer des formules via les retours d'exécution
-        // d'actions
-
-        return new InterpretTuple(returns, deductedFormulas, lastInterpretation.initialObservationsIntegrated);
-    }
-
-    /**
-     * Announcement of a formula to an agent.
+     * Announcement of associated formulas to agents.
      * 
      * Specification to announce formulas to agents in one method.
      * 
@@ -205,7 +81,7 @@ public class MAKBPInterpreter {
     }
 
     /**
-     * Announcement of a formula to an agent.
+     * Announcement of associated formulas to agents.
      * 
      * Specification to announce formula to agent via a map.
      * 
@@ -307,10 +183,27 @@ public class MAKBPInterpreter {
      * @param agent        reasoning agent
      * @param observations observations
      * @return deducted formula
+     * 
+     * @see #reasoning(Agent, Map, Map)
+     * @note Use this method if your observations knowledge is the same as your
+     *       agents programs knowledge.
      */
-    public Formula raisonning(Agent agent, Map<Agent, Formula> observations) {
+    public Formula reasoning(Agent agent, Map<Agent, Formula> observations) {
+        return this.reasoning(agent, observations, this.permissions);
+    }
+
+    /**
+     * Returns a formula in function of observations and observations knowledge for
+     * agents via permissions.
+     * 
+     * @param agent        reasoning agent
+     * @param observations observations
+     * @param permissions  map to know if an agent can see another agent
+     * @return deducted formula
+     */
+    public Formula reasoning(Agent agent, Map<Agent, Formula> observations, Map<Agent, Set<Agent>> permissions) {
         Set<Formula> formulas = new HashSet<>();
-        for (Agent destAgent : this.permissions.get(agent)) { // only if agent knows destAgent program
+        for (Agent destAgent : this.permissions.get(agent)) { // only if agent can see destAgent
             formulas.add(observations.get(destAgent));
         }
         return new And(formulas);
@@ -318,26 +211,32 @@ public class MAKBPInterpreter {
 
     /**
      * Returns a map of agents and formulas in function of observations and agents
-     * programs knowledge
-     * for agents.
+     * programs knowledge for agents.
      * 
-     * @param agents                       reasoning agents
-     * @param observations                 observations
-     * @param initialObservations          initial observations of each agent
-     * @param integrateInitialObservations boolean representing if we integrate
-     *                                     initial observations or not
+     * @param agents       reasoning agents
+     * @param observations observations
+     * @return deducted formulas
+     * @see #reasoning(Collection, Map, Map)
+     * @note Use this method if your observations knowledge is the same as your
+     *       agents programs knowledge.
+     */
+    public Map<Agent, Formula> reasoning(Collection<Agent> agents, Map<Agent, Formula> observations) {
+        return this.reasoning(agents, observations, this.permissions);
+    }
+
+    /**
+     * Returns a map of agents and formulas in function of observations and
+     * observations knowledge for agents via permissions.
+     * 
+     * @param agents       reasoning agents
+     * @param observations observations
      * @return deducted formulas
      */
-    public Map<Agent, Formula> raisonning(Collection<Agent> agents, Map<Agent, Formula> observations,
-            Map<Agent, Formula> initialObservations, boolean integrateInitialObservations) {
+    public Map<Agent, Formula> reasoning(Collection<Agent> agents, Map<Agent, Formula> observations,
+            Map<Agent, Set<Agent>> permissions) {
         Map<Agent, Formula> formulas = new HashMap<>();
         for (Agent agent : agents) {
-            Formula f = this.raisonning(agent, observations);
-            if (integrateInitialObservations) {
-                if (initialObservations.containsKey(agent) && initialObservations.get(agent) != null) {
-                    f = new And(f, initialObservations.get(agent));
-                }
-            }
+            Formula f = this.reasoning(agent, observations, permissions);
             formulas.put(agent, f);
         }
         return formulas;
@@ -383,18 +282,16 @@ public class MAKBPInterpreter {
      */
     public boolean isFinished(KripkeWorld realWorld)
             throws KripkeStructureInvalidRuntimeException, NoKripkeWorldPossibleException {
-        System.out.println(realWorld);
-        for (KripkeStructure structure : this.structures.values()) {
-            System.out.println(structure);
-            if (structure.getWorlds().size() == 0) {
+        for (Map.Entry<Agent, KripkeStructure> entry : this.structures.entrySet()) {
+            if (entry.getValue().getWorlds().size() == 0) {
                 throw new NoKripkeWorldPossibleException();
             }
 
-            if (!structure.getWorlds().contains(realWorld)) {
+            if (!entry.getValue().getWorlds().contains(realWorld)) {
                 throw new KripkeStructureInvalidRuntimeException("Real world not in at least one structure");
             }
 
-            if (structure.getWorlds().size() > 1) {
+            if (entry.getValue().getWorlds().size() > 1) {
                 return false;
             }
         }

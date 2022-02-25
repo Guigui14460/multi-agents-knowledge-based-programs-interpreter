@@ -107,12 +107,8 @@ public class AgentKnowledge implements Formula {
         //
         // (M, s) |= K_i(phi) iff for all t, (M,t) |= phi, (s,t) e K_i(s)
         boolean result = true;
-        System.out.println(this.innerFormula + " evaluation :");
         for (KripkeWorld otherWorld : structure.getWorldFromOtherWorldAndAgent(world, agent)) {
-            System.out.println("Ka evaluate World nammed " + otherWorld.getName());
-            boolean res = this.innerFormula.evaluate(otherWorld.getAssignment(), otherWorld, structure);
-            System.out.println("==> " + res);
-            result = result && res;
+            result = result && this.innerFormula.evaluate(otherWorld.getAssignment(), otherWorld, structure);
         }
         return result;
     }

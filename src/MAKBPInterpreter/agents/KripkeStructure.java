@@ -11,7 +11,7 @@ import MAKBPInterpreter.agents.exceptions.KripkeStructureInvalidRuntimeException
 import MAKBPInterpreter.logic.Formula;
 
 /**
- * Represents a system of raisonning for modal logic.
+ * Represents a system of reasoning for modal logic.
  */
 public class KripkeStructure {
     /**
@@ -176,7 +176,6 @@ public class KripkeStructure {
         Set<KripkeWorld> worldsToRemove = new HashSet<>();
         for (KripkeWorld world : this.graph.keySet()) {
             if (!world.satisfied(formula, this)) {
-                System.out.println(world + " not satisfied " + formula + "\n");
                 worldsToRemove.add(world);
             }
         }
@@ -269,7 +268,7 @@ public class KripkeStructure {
     /**
      * Gets the graph used by the structure.
      * 
-     * @return raisonning graph
+     * @return reasoning graph
      */
     public Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> getGraph() {
         return this.graph;
