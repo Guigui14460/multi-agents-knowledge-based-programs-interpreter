@@ -26,7 +26,7 @@ public class KripkeWorld {
     private String name;
 
     /**
-     * True propositions.
+     * Propositions of the world represents.
      */
     private Map<Atom, Boolean> assignment;
 
@@ -34,7 +34,7 @@ public class KripkeWorld {
      * Default constructor.
      * 
      * @param name       world name
-     * @param assignment true proposition of the world
+     * @param assignment proposition of the world represents
      */
     public KripkeWorld(String name, Map<Atom, Boolean> assignment) {
         this.name = name;
@@ -45,7 +45,7 @@ public class KripkeWorld {
     /**
      * Constructor without world name.
      * 
-     * @param assignment true proposition of the world
+     * @param assignment proposition of the world represents
      */
     public KripkeWorld(Map<Atom, Boolean> assignment) {
         this(KripkeWorld.id.toString(), assignment);

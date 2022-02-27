@@ -218,10 +218,12 @@ public class MuddyChildrenProblem {
                 System.out.println("====================== k = " + Integer.toString(k) + " ======================");
 
                 // removing worlds from father and deducted formulas
-                System.out.println("Before announcements : " + interpreter.getStructures().toString());
+                // System.out.println("Before announcements : " +
+                // interpreter.getStructures().toString());
                 interpreter.publicAnnouncement(agents, fatherFormula);
                 interpreter.publicAnnouncement(deductions);
-                System.out.println("After announcements : " + interpreter.getStructures().toString());
+                // System.out.println("After announcements : " +
+                // interpreter.getStructures().toString());
 
                 // actions execution
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, realWorldObject);
@@ -231,7 +233,7 @@ public class MuddyChildrenProblem {
                 deductions = interpreter.reverseEngineering(actions);
                 deductions = interpreter.reasoning(agents, deductions);
 
-                Thread.sleep(1000);
+                Thread.sleep(500);
             }
 
             System.out.println("\n\n\nFound in k = " + k);

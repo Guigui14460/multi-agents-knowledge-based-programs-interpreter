@@ -20,11 +20,6 @@ public class KripkeStructure {
     private Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> graph;
 
     /**
-     * Collection of agents representing all the current agents in the environment.
-     */
-    private Collection<Agent> agents;
-
-    /**
      * Constructor.
      * 
      * @param graph                 graph to assigned to the structure
@@ -43,7 +38,6 @@ public class KripkeStructure {
         if (!reflexiveArcsIncluded) {
             graph = this.addReflexiveArcs(graph, agents);
         }
-        this.agents = agents;
         this.graph = graph;
     }
 
@@ -67,7 +61,6 @@ public class KripkeStructure {
      * @param structure structure to copy
      */
     public KripkeStructure(KripkeStructure structure) {
-        this.agents = new HashSet<>(structure.agents);
         this.graph = new HashMap<>();
         for (KripkeWorld key : structure.graph.keySet()) {
             Map<Agent, Set<KripkeWorld>> map = new HashMap<>();
@@ -213,10 +206,6 @@ public class KripkeStructure {
 
         KripkeStructure structure = (KripkeStructure) other;
 
-        if (!this.agents.equals(structure.agents)) {
-            return false;
-        }
-
         // different size
         if (structure.graph.size() != this.graph.size()) {
             return false;
@@ -243,7 +232,7 @@ public class KripkeStructure {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.agents, this.graph);
+        return Objects.hash(this.graph);
     }
 
     /**
@@ -272,15 +261,6 @@ public class KripkeStructure {
      */
     public Map<KripkeWorld, Map<Agent, Set<KripkeWorld>>> getGraph() {
         return this.graph;
-    }
-
-    /**
-     * Gets the collection of agents used by the structure.
-     * 
-     * @return collection of agents
-     */
-    public Collection<Agent> getAgents() {
-        return this.agents;
     }
 
     /**

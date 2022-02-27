@@ -76,17 +76,14 @@ public class TestKripkeStructure extends TestCase {
             structure2.publicAnnouncement(atom);
             assertFalse(structure.equals(structure2));
             assertEquals(new HashSet<>(Arrays.asList(world1, world2)), structure.getWorlds());
-            assertEquals(agents, structure.getAgents());
             assertEquals(new HashSet<>(Arrays.asList(world1)), structure2.getWorlds());
-            assertEquals(agents, structure2.getAgents());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     /**
-     * Tests the {@link MAKBPInterpreter.agents.KripkeStructure#getAgents()} and
-     * {@link MAKBPInterpreter.agents.KripkeStructure#getGraph()} methods.
+     * Tests the {@link MAKBPInterpreter.agents.KripkeStructure#getGraph()} method.
      */
     @Test
     public void testGetters() {
@@ -100,7 +97,6 @@ public class TestKripkeStructure extends TestCase {
 
         KripkeStructure structure = new KripkeStructure(graph, agents);
 
-        assertEquals(agents, structure.getAgents());
         assertEquals(graph, structure.getGraph());
         assertEquals(new HashSet<>(Arrays.asList(world)), structure.getWorlds());
     }

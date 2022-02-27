@@ -6,7 +6,8 @@ import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 
 /**
- * Represents a knowledge that agent knows it true in a world.
+ * Represents a knowledge that agent knows it true in a world in a modal logic
+ * system.
  */
 public class Box extends AgentKnowledge {
     /**

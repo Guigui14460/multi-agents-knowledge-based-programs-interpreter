@@ -8,7 +8,8 @@ import MAKBPInterpreter.logic.Not;
 import MAKBPInterpreter.logic.Or;
 
 /**
- * Represents a knowledge that an agent considers to be true between world.
+ * Represents a knowledge that an agent considers to be true between world in a
+ * modal logic system.
  */
 public class Diamond extends AgentKnowledge {
     /**
