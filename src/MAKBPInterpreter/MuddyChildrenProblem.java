@@ -94,23 +94,22 @@ public class MuddyChildrenProblem {
             Action denounceItself = new Action() {
                 @Override
                 public Object performs(Object... objects) throws IllegalArgumentException {
-                    if (objects.length != 2) {
-                        throw new IllegalArgumentException("Need the agent object and a formula");
+                    if (objects.length < 1) {
+                        throw new IllegalArgumentException("Need at least the agent object");
                     }
                     Agent agent = (Agent) objects[0];
-                    // Atom atom = (Atom) objects[1];
                     System.out.println("L'agent " + agent.getName() + " s'est dénoncé");
                     return agent;
                 }
             };
             ap.put(new AgentKnowledge(agent, atom), denounceItself);
-            objects.put(denounceItself, new ArrayList<>(Arrays.asList(agent, atom)));
+            objects.put(denounceItself, new ArrayList<>(Arrays.asList(agent)));
 
             // action: beQuiet
             Action beQuiet = new Action() {
                 @Override
                 public Object performs(Object... objects) throws IllegalArgumentException {
-                    if (objects.length == 0) {
+                    if (objects.length < 1) {
                         throw new IllegalArgumentException("Need at least the agent object");
                     }
                     Agent agent = (Agent) objects[0];

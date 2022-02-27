@@ -272,13 +272,14 @@ public class MAKBPInterpreter {
     /**
      * Check if the interpreter is terminated.
      * 
-     * @param realWorld the real world
+     * @param realWorld the real world or pointed world
      * @return boolean representing the end of the interpreter
      * @throws KripkeStructureInvalidRuntimeException thrown when the real world has
      *                                                been deleted (so no
      *                                                convergence to it)
-     * @thorws NoKripkeWorldPossibleException thrown when no world are in a
-     *         structure (impossible, need one real world)
+     * @throws NoKripkeWorldPossibleException         thrown when no world are in a
+     *                                                structure (impossible, need
+     *                                                one real world)
      */
     public boolean isFinished(KripkeWorld realWorld)
             throws KripkeStructureInvalidRuntimeException, NoKripkeWorldPossibleException {
@@ -291,7 +292,7 @@ public class MAKBPInterpreter {
                 throw new KripkeStructureInvalidRuntimeException("Real world not in at least one structure");
             }
 
-            if (entry.getValue().getWorlds().size() > 1) {
+            if (entry.getValue().getWorldFromOtherWorldAndAgent(realWorld, entry.getKey()).size() > 1) {
                 return false;
             }
         }
@@ -302,8 +303,9 @@ public class MAKBPInterpreter {
      * Check if the interpreter is terminated.
      * 
      * @return boolean representing the end of the interpreter
-     * @thorws NoKripkeWorldPossibleException thrown when no world are in a
-     *         structure (impossible, need one real world)
+     * @throws NoKripkeWorldPossibleException thrown when no world are in a
+     *                                        structure (impossible, need one real
+     *                                        world)
      */
     public boolean isFinished() throws NoKripkeWorldPossibleException {
         for (KripkeStructure structure : this.structures.values()) {
