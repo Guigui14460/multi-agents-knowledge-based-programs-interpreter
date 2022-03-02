@@ -67,16 +67,27 @@ public class KripkeWorld {
      * Returns the differences between two worlds (all atoms divergence).
      * 
      * @param world other world
-     * @return atoms collection representing the divergence
+     * @return atoms set representing the divergence
      */
     public Collection<Atom> differencesBetweenWorlds(KripkeWorld world) {
-        Set<Atom> atoms = new HashSet<>();
-        for (Map.Entry<Atom, Boolean> entry : this.assignment.entrySet()) {
-            if (world.assignment.get(entry.getKey()) != entry.getValue()) {
-                atoms.add(entry.getKey());
+        Set<Atom> union = new HashSet<>();
+        union.addAll(this.assignment.keySet());
+        union.addAll(world.assignment.keySet());
+
+        Set<Atom> intersection = new HashSet<>();
+        intersection.addAll(this.assignment.keySet());
+        intersection.retainAll(world.assignment.keySet());
+
+        union.removeAll(intersection);
+
+        // check if atom in intersection have different values
+        for (Atom atom : intersection) {
+            if (world.assignment.get(atom) != this.assignment.get(atom)) {
+                union.add(atom);
             }
         }
-        return atoms;
+
+        return union;
     }
 
     @Override

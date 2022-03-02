@@ -292,7 +292,7 @@ public class MAKBPInterpreter {
                 throw new KripkeStructureInvalidRuntimeException("Real world not in at least one structure");
             }
 
-            if (entry.getValue().getWorldFromOtherWorldAndAgent(realWorld, entry.getKey()).size() > 1) {
+            if (entry.getValue().getWorldsFromOtherWorldAndAgent(realWorld, entry.getKey()).size() > 1) {
                 return false;
             }
         }

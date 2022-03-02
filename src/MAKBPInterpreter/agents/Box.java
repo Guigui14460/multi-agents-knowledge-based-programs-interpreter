@@ -41,7 +41,7 @@ public class Box extends AgentKnowledge {
         //
         // (M, s) |= K_i(phi) iff for all t, (M,t) |= phi, (s,t) e K_i(s)
         boolean result = true;
-        for (KripkeWorld otherWorld : structure.getWorldFromOtherWorldAndAgent(world, agent)) {
+        for (KripkeWorld otherWorld : structure.getWorldsFromOtherWorldAndAgent(world, agent)) {
             result = result && otherWorld.satisfied(this.innerFormula, structure);
         }
         return result;

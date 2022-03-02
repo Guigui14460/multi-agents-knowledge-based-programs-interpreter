@@ -734,7 +734,7 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Formula> reversedEng = interpreter.reverseEngineering(actions);
                 interpreter.publicAnnouncement(agentA, interpreter.reasoning(agentA, reversedEng));
 
-                assertFalse("Must be false", interpreter.isFinished(pointedWorld));
+                assertTrue("Must be true", interpreter.isFinished(pointedWorld));
                 assertFalse("Must be false", interpreter.isFinished());
 
                 interpreter.publicAnnouncement(agents, formula);

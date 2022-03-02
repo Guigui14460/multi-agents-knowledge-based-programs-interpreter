@@ -143,6 +143,7 @@ public class TestKripkeWorld extends TestCase {
     public void testDifferencesBetweenWorlds() {
         Atom atom1 = new Atom("1");
         Atom atom2 = new Atom("2");
+        Atom atom3 = new Atom("3");
 
         Map<Atom, Boolean> assignment = new HashMap<>();
         assignment.put(atom1, true);
@@ -150,8 +151,9 @@ public class TestKripkeWorld extends TestCase {
         KripkeWorld world1 = new KripkeWorld("test", assignment);
         Map<Atom, Boolean> assignment2 = new HashMap<>(assignment);
         assignment2.put(atom1, false);
+        assignment2.put(atom3, false);
         KripkeWorld world2 = new KripkeWorld("test2", assignment2);
 
-        assertEquals(new HashSet<>(Arrays.asList(atom1)), world1.differencesBetweenWorlds(world2));
+        assertEquals(new HashSet<>(Arrays.asList(atom1, atom3)), world1.differencesBetweenWorlds(world2));
     }
 }

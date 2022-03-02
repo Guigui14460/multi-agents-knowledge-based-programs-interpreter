@@ -246,7 +246,7 @@ public class KripkeStructure {
      * @param agent agent to test
      * @return a set of worlds
      */
-    public Set<KripkeWorld> getWorldFromOtherWorldAndAgent(KripkeWorld world, Agent agent) {
+    public Set<KripkeWorld> getWorldsFromOtherWorldAndAgent(KripkeWorld world, Agent agent) {
         if (!this.graph.containsKey(world)) {
             throw new KripkeStructureInvalidRuntimeException(
                     "the world " + world + " no longer exists in this structure");

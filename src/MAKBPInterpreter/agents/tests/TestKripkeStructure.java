@@ -193,11 +193,11 @@ public class TestKripkeStructure extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.agents.KripkeStructure#getWorldFromOtherWorldAndAgent(MAKBPInterpreter.agents.KripkeWorld, MAKBPInterpreter.agents.Agent)}
+     * {@link MAKBPInterpreter.agents.KripkeStructure#getWorldsFromOtherWorldAndAgent(MAKBPInterpreter.agents.KripkeWorld, MAKBPInterpreter.agents.Agent)}
      * method.
      */
     @Test
-    public void testGetWorldFromOtherWorldAndAgent() {
+    public void testgetWorldsFromOtherWorldAndAgent() {
         Agent agent = new Agent("a", new AgentProgram());
         Agent agent2 = new Agent("b", new AgentProgram());
         Collection<Agent> agents = new HashSet<>(Arrays.asList(agent, agent2));
@@ -216,15 +216,15 @@ public class TestKripkeStructure extends TestCase {
         KripkeStructure structure = new KripkeStructure(graph, agents, false, false);
 
         assertEquals(new HashSet<>(Arrays.asList(world1, world2)),
-                structure.getWorldFromOtherWorldAndAgent(world1, agent));
+                structure.getWorldsFromOtherWorldAndAgent(world1, agent));
         assertEquals(new HashSet<>(Arrays.asList(world1, world3)),
-                structure.getWorldFromOtherWorldAndAgent(world1, agent2));
+                structure.getWorldsFromOtherWorldAndAgent(world1, agent2));
         assertEquals(new HashSet<>(Arrays.asList(world1, world2)),
-                structure.getWorldFromOtherWorldAndAgent(world2, agent));
-        assertEquals(new HashSet<>(Arrays.asList(world2)), structure.getWorldFromOtherWorldAndAgent(world2, agent2));
-        assertEquals(new HashSet<>(Arrays.asList(world3)), structure.getWorldFromOtherWorldAndAgent(world3, agent));
+                structure.getWorldsFromOtherWorldAndAgent(world2, agent));
+        assertEquals(new HashSet<>(Arrays.asList(world2)), structure.getWorldsFromOtherWorldAndAgent(world2, agent2));
+        assertEquals(new HashSet<>(Arrays.asList(world3)), structure.getWorldsFromOtherWorldAndAgent(world3, agent));
         assertEquals(new HashSet<>(Arrays.asList(world1, world3)),
-                structure.getWorldFromOtherWorldAndAgent(world3, agent2));
+                structure.getWorldsFromOtherWorldAndAgent(world3, agent2));
     }
 
     /**

@@ -98,7 +98,7 @@ public class CommonKnowledge implements Formula {
         // (M, s) |= CK_J(phi) iff forall t, (M,t) |= phi, (s,t) e (forall i e J,
         // K_i(s))
         for (Agent agent : this.agents) {
-            for (KripkeWorld otherWorld : structure.getWorldFromOtherWorldAndAgent(world, agent)) {
+            for (KripkeWorld otherWorld : structure.getWorldsFromOtherWorldAndAgent(world, agent)) {
                 result = result && otherWorld.satisfied(this.innerFormula, structure);
             }
         }
