@@ -152,6 +152,9 @@ public class MAKBPInterpreter {
     public Map<Agent, Object> executeAction(Map<Agent, Action> actions) throws Exception {
         Map<Agent, Object> returns = new HashMap<>();
         for (Map.Entry<Agent, Action> entry : actions.entrySet()) {
+            if (entry.getValue() == null) {
+                continue;
+            }
             if (!this.objects.containsKey(entry.getValue())) {
                 throw new NullPointerException("objects doesn't have key '" + entry.getValue() + "'");
             }

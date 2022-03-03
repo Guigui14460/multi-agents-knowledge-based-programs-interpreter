@@ -59,18 +59,18 @@ public class Agent {
         boolean condition_validate = false;
         while (!condition_validate) {
             i++;
-            Formula key = null;
-            try {
-                key = this.program.getKey(i);
-            } catch (IndexOutOfBoundsException e) {
+            if (i >= this.program.size()) { // if no else is present
                 return null;
             }
+
+            Formula key = this.program.getKey(i);
             if (key != null) {
                 condition_validate = key.evaluate(pointedWorld.getAssignment(), pointedWorld, structure);
-            } else {
+            } else { // handle the else statement
                 condition_validate = true;
             }
         }
+
         this.lastSelectedAction = this.program.getValue(i);
         return this.lastSelectedAction;
     }
