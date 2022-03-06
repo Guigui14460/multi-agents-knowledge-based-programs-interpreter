@@ -97,10 +97,22 @@ public class Agent {
             }
         }
 
+        // else
         if (formulaIfElseIf.size() == 0 || (formulaIfElseIf.size() == 1 && formulaIfElseIf.contains(null))) {
             return new And(formulasElse).simplify();
         }
-        // if the action selected is in multiple program value
+        // when action in else and other if
+        if (formulaIfElseIf.size() > 1 && formulaIfElseIf.contains(null)) {
+            Set<Formula> forms = new HashSet<>(formulasElse);
+            for (Formula formula : formulaIfElseIf) {
+                if (formula != null) {
+                    forms.add(new Not(formula));
+                }
+            }
+            return new Or(new Or(formulaIfElseIf), new And(forms)).simplify();
+        }
+
+        // if the action selected is in multiple program value without in else statement
         return new Or(formulaIfElseIf).simplify();
     }
 

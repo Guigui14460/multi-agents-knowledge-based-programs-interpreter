@@ -256,5 +256,17 @@ public class TestAgent extends TestCase {
         assertEquals(new And(new Not(formula2), new Not(formula1), new Not(formula3)).simplify(),
                 agent2.reverseEngineering(action3));
         assertEquals(new Or(formula1, formula2), agent2.reverseEngineering(action2));
+
+        AgentProgram program3 = new AgentProgram(program);
+        program3.put(formula1, action2);
+        program3.put(formula3, action1);
+        program3.put(null, action2);
+        Agent agent3 = new Agent(name + "1", program3);
+
+        assertNull(agent.reverseEngineering(null));
+        assertEquals(formula3, agent3.reverseEngineering(action1));
+        assertEquals(
+                new Or(formula1, formula2, new And(new Not(formula1), new Not(formula2), new Not(formula3))).simplify(),
+                agent3.reverseEngineering(action2));
     }
 }
