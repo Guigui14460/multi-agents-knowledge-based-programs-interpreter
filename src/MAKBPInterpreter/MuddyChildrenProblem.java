@@ -113,7 +113,7 @@ public class MuddyChildrenProblem {
                         throw new IllegalArgumentException("Need at least the agent object");
                     }
                     Agent agent = (Agent) objects[0];
-                    System.out.println("L'agent " + agent.getName() + " s'est tait");
+                    System.out.println("L'agent " + agent.getName() + " s'est tu");
                     return null;
                 }
             };
@@ -261,7 +261,7 @@ public class MuddyChildrenProblem {
                 throw new IllegalArgumentException("Need at least the agent object");
             }
             Agent agent = (Agent) objects[0];
-            System.out.println("L'agent " + agent.getName() + " s'est tait");
+            System.out.println("L'agent " + agent.getName() + " s'est tu");
             return null;
         }
     };

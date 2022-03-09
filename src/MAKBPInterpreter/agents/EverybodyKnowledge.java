@@ -10,10 +10,8 @@ import MAKBPInterpreter.logic.Not;
 
 /**
  * Represents a set of agents knowing a common formula.
- * 
- * This knowledge corresponding of EK^depth(EK^(depth-1) (... (EK(phi)))).
  */
-public class CommonKnowledge implements Formula {
+public class EverybodyKnowledge implements Formula {
     /**
      * Agent set where each agent knows the associated formula.
      */
@@ -25,22 +23,14 @@ public class CommonKnowledge implements Formula {
     protected Formula innerFormula;
 
     /**
-     * Depth of the knowledge (finite).
-     */
-    private int depth;
-
-    /**
      * Default constructor.
      * 
      * @param formula knowledge
      * @param agents  set of agents where each of this knows the {@code formula}
-     * @param depth   finite depth of knowledge of {@code formula} for
-     *                {@code agents}
      */
-    public CommonKnowledge(Formula formula, Set<Agent> agents, int depth) {
+    public EverybodyKnowledge(Formula formula, Set<Agent> agents) {
         this.agents = agents;
         this.innerFormula = formula;
-        this.depth = depth;
     }
 
     @Override
@@ -49,23 +39,22 @@ public class CommonKnowledge implements Formula {
             return true;
         if (other == null)
             return false;
-        if (!(other instanceof CommonKnowledge))
+        if (!(other instanceof EverybodyKnowledge))
             return false;
 
-        CommonKnowledge otherCommonKnowledge = (CommonKnowledge) other;
-        return otherCommonKnowledge.agents.equals(this.agents)
-                && this.innerFormula.equals(otherCommonKnowledge.innerFormula)
-                && this.depth == otherCommonKnowledge.depth;
+        EverybodyKnowledge otherEverybodyKnowledge = (EverybodyKnowledge) other;
+        return otherEverybodyKnowledge.agents.equals(this.agents)
+                && this.innerFormula.equals(otherEverybodyKnowledge.innerFormula);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.agents, this.innerFormula, this.depth);
+        return Objects.hash(this.agents, this.innerFormula);
     }
 
     @Override
     public Formula simplify() {
-        return new CommonKnowledge(this.innerFormula.simplify(), this.agents, this.depth);
+        return new EverybodyKnowledge(this.innerFormula.simplify(), this.agents);
     }
 
     @Override
@@ -103,13 +92,15 @@ public class CommonKnowledge implements Formula {
         if (objects.length < 2) {
             throw new IllegalArgumentException("We must have at least the world and the Kripke structure");
         }
-        // (M, s) |= CK_J(phi) iff AND forall 0 < i <= depth, EK_J^{i}(EK_J^{i-1}(phi))
-        // EK_J^0 (phi) = phi
-        boolean result = this.innerFormula.evaluate(state, objects);
-        Formula currentFormula = this.innerFormula;
-        for (int i = 1; i <= depth; i++) {
-            currentFormula = new EverybodyKnowledge(currentFormula, agents);
-            result = result && currentFormula.evaluate(state, objects);
+        KripkeWorld world = (KripkeWorld) objects[0];
+        KripkeStructure structure = (KripkeStructure) objects[1];
+        boolean result = true;
+        // (M, s) |= EK_J(phi) iff forall t, (M,t) |= phi, (s,t) e (forall i e J,
+        // K_i(s))
+        for (Agent agent : this.agents) {
+            for (KripkeWorld otherWorld : structure.getWorldsFromOtherWorldAndAgent(world, agent)) {
+                result = result && otherWorld.satisfied(this.innerFormula, structure);
+            }
         }
         return result;
     }
