@@ -1,7 +1,10 @@
 package MAKBPInterpreter.agents;
 
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 
 import MAKBPInterpreter.logic.Atom;
@@ -25,22 +28,14 @@ public class CommonKnowledge implements Formula {
     protected Formula innerFormula;
 
     /**
-     * Depth of the knowledge (finite).
-     */
-    private int depth;
-
-    /**
      * Default constructor.
      * 
      * @param formula knowledge
      * @param agents  set of agents where each of this knows the {@code formula}
-     * @param depth   finite depth of knowledge of {@code formula} for
-     *                {@code agents}
      */
-    public CommonKnowledge(Formula formula, Set<Agent> agents, int depth) {
+    public CommonKnowledge(Formula formula, Set<Agent> agents) {
         this.agents = agents;
         this.innerFormula = formula;
-        this.depth = depth;
     }
 
     @Override
@@ -54,18 +49,17 @@ public class CommonKnowledge implements Formula {
 
         CommonKnowledge otherCommonKnowledge = (CommonKnowledge) other;
         return otherCommonKnowledge.agents.equals(this.agents)
-                && this.innerFormula.equals(otherCommonKnowledge.innerFormula)
-                && this.depth == otherCommonKnowledge.depth;
+                && this.innerFormula.equals(otherCommonKnowledge.innerFormula);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.agents, this.innerFormula, this.depth);
+        return Objects.hash(this.agents, this.innerFormula);
     }
 
     @Override
     public Formula simplify() {
-        return new CommonKnowledge(this.innerFormula.simplify(), this.agents, this.depth);
+        return new CommonKnowledge(this.innerFormula.simplify(), this.agents);
     }
 
     @Override
@@ -97,20 +91,48 @@ public class CommonKnowledge implements Formula {
         return this.agents;
     }
 
+    /**
+     * Evaluates the everybody knowledge of {@link CommonKnowledge#innerFormula
+     * formula} in all accessible worlds by all
+     * agents of the group {@link CommonKnowledge#agents}.
+     * 
+     * An adapted Breadth-first search where at each world, an evaluation of EK was
+     * realized.
+     * This algorithm represents the infinite depth in theory but limited by the
+     * number of edges and vertices of the Kripke structure.
+     */
     @Override
     public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
         // we have always two additionnal arguments but we verify that is the case
         if (objects.length < 2) {
             throw new IllegalArgumentException("We must have at least the world and the Kripke structure");
         }
-        // (M, s) |= CK_J(phi) iff AND forall 0 < i <= depth, EK_J^{i}(EK_J^{i-1}(phi))
-        // EK_J^0 (phi) = phi
-        boolean result = this.innerFormula.evaluate(state, objects);
-        Formula currentFormula = this.innerFormula;
-        for (int i = 1; i <= depth; i++) {
-            currentFormula = new EverybodyKnowledge(currentFormula, agents);
-            result = result && currentFormula.evaluate(state, objects);
+        KripkeWorld pointedWorld = (KripkeWorld) objects[0];
+        KripkeStructure structure = (KripkeStructure) objects[1];
+
+        Formula formula = new EverybodyKnowledge(this.innerFormula, agents);
+
+        Queue<KripkeWorld> queue = new LinkedList<>();
+        Set<KripkeWorld> coloredWorlds = new HashSet<>();
+        queue.add(pointedWorld);
+        coloredWorlds.add(pointedWorld);
+        while (!queue.isEmpty()) {
+            KripkeWorld world = queue.poll();
+
+            if (!world.satisfied(formula, structure)) {
+                return false;
+            }
+
+            for (Agent agent : this.agents) {
+                for (KripkeWorld t : structure.getWorldsFromOtherWorldAndAgent(world, agent)) {
+                    if (!coloredWorlds.contains(t)) {
+                        queue.add(t);
+                        coloredWorlds.add(t);
+                    }
+                }
+            }
         }
-        return result;
+
+        return true;
     }
 }
