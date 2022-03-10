@@ -5,7 +5,6 @@ import java.util.Map;
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
-import MAKBPInterpreter.logic.Or;
 
 /**
  * Represents a knowledge that an agent considers to be true between world in a
@@ -24,8 +23,7 @@ public class Diamond extends AgentKnowledge {
 
     @Override
     public Formula simplify() {
-        return new Or(new Not(new AgentKnowledge(this.agent, this.innerFormula.simplify())),
-                new Not(new AgentKnowledge(this.agent, new Not(this.innerFormula).simplify())));
+        return new Not(new AgentKnowledge(this.agent, new Not(this.innerFormula)));
     }
 
     @Override

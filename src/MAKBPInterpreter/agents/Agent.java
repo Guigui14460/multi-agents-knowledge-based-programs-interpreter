@@ -1,13 +1,11 @@
 package MAKBPInterpreter.agents;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import MAKBPInterpreter.logic.And;
 import MAKBPInterpreter.logic.Formula;
-import MAKBPInterpreter.logic.Not;
 import MAKBPInterpreter.logic.Or;
 
 /**
@@ -87,33 +85,23 @@ public class Agent {
             return null;
         }
 
-        Set<Formula> formulasElse = new HashSet<>();
-        Set<Formula> formulaIfElseIf = new HashSet<>();
-        for (Map.Entry<Formula, Action> entry : this.program.entrySet()) {
-            if (selectedAction.equals(entry.getValue())) {
-                formulaIfElseIf.add(entry.getKey());
-            } else {
-                formulasElse.add(new Not(entry.getKey()));
+        Set<Formula> formulas = new HashSet<>();
+        Set<Formula> negativeConditions = new HashSet<>();
+
+        for (int i = 0; i < this.program.size(); i++) {
+            Formula formula = this.program.getKey(i);
+            Action action = this.program.getValue(i);
+
+            if (selectedAction.equals(action)) {
+                Formula f = negativeConditions.size() == 0 ? null : new And(new HashSet<>(negativeConditions));
+                formulas.add(new And(formula, f));
+            }
+            if (formula != null) {
+                negativeConditions.add(formula.getNegation());
             }
         }
 
-        // else
-        if (formulaIfElseIf.size() == 0 || (formulaIfElseIf.size() == 1 && formulaIfElseIf.contains(null))) {
-            return new And(formulasElse).simplify();
-        }
-        // when action in else and other if
-        if (formulaIfElseIf.size() > 1 && formulaIfElseIf.contains(null)) {
-            Set<Formula> forms = new HashSet<>(formulasElse);
-            for (Formula formula : formulaIfElseIf) {
-                if (formula != null) {
-                    forms.add(new Not(formula));
-                }
-            }
-            return new Or(new Or(formulaIfElseIf), new And(forms)).simplify();
-        }
-
-        // if the action selected is in multiple program value without in else statement
-        return new Or(formulaIfElseIf).simplify();
+        return new Or(formulas).simplify();
     }
 
     /**

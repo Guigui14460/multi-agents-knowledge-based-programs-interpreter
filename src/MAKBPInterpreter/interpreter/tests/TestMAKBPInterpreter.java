@@ -503,7 +503,12 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Formula> reversedEng = new HashMap<>();
                 reversedEng.put(agentA, new And(new Not(KaP), new Not(KaF)));
                 reversedEng.put(agentB, KbP);
-                assertEquals("Must be equals", reversedEng, interpreter.reverseEngineering(actions));
+
+                Map<Agent, Formula> results = interpreter.reverseEngineering(actions);
+                for (Map.Entry<Agent, Formula> entry : results.entrySet()) {
+                    assertEquals("Must be equals", reversedEng.get(entry.getKey()),
+                            entry.getValue().simplify().simplify().simplify());
+                }
             } catch (Exception e) {
                 throw e;
             }
@@ -520,7 +525,12 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Formula> reversedEng = new HashMap<>();
                 reversedEng.put(agentA, KaP);
                 reversedEng.put(agentB, KbP);
-                assertEquals("Must be equals", reversedEng, interpreter.reverseEngineering(actions));
+
+                Map<Agent, Formula> results = interpreter.reverseEngineering(actions);
+                for (Map.Entry<Agent, Formula> entry : results.entrySet()) {
+                    assertEquals("Must be equals", reversedEng.get(entry.getKey()),
+                            entry.getValue().simplify().simplify().simplify());
+                }
             } catch (Exception e) {
                 throw e;
             }
@@ -536,8 +546,13 @@ public class TestMAKBPInterpreter extends TestCase {
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = new HashMap<>();
                 reversedEng.put(agentA, new And(new Not(KaP), new Not(KaF)));
-                reversedEng.put(agentB, KbF);
-                assertEquals("Must be equals", reversedEng, interpreter.reverseEngineering(actions));
+                reversedEng.put(agentB, new And(KbF, KbP.getNegation()));
+
+                Map<Agent, Formula> results = interpreter.reverseEngineering(actions);
+                for (Map.Entry<Agent, Formula> entry : results.entrySet()) {
+                    assertEquals("Must be equals", reversedEng.get(entry.getKey()),
+                            entry.getValue().simplify().simplify().simplify());
+                }
             } catch (Exception e) {
                 throw e;
             }
@@ -552,7 +567,7 @@ public class TestMAKBPInterpreter extends TestCase {
      * @throws Exception
      */
     @Test
-    public void testreasoning() throws Exception {
+    public void testReasoning() throws Exception {
         Atom atom1 = new Atom("piece on heads");
         Agent agentA = new Agent("a", new AgentProgram());
         AgentKnowledge KaP = new AgentKnowledge(agentA, atom1);
@@ -610,13 +625,16 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = interpreter.reverseEngineering(actions);
-                assertEquals("Must be equals", new And(KbP), interpreter.reasoning(agentA, reversedEng));
-                assertEquals("Must be equals", new And(new And(new Not(KaP), new Not(KaF))),
-                        interpreter.reasoning(agentB, reversedEng));
+                assertEquals("Must be equals", KbP,
+                        interpreter.reasoning(agentA, reversedEng).simplify().simplify().simplify());
+                assertEquals("Must be equals", new And(new Not(KaP), new Not(KaF)),
+                        interpreter.reasoning(agentB, reversedEng).simplify().simplify().simplify());
 
                 permissions.put(agentB, new HashSet<>());
-                assertEquals("Must be equals", new And(KbP), interpreter.reasoning(agentA, reversedEng));
-                assertEquals("Must be equals", new And(), interpreter.reasoning(agentB, reversedEng));
+                assertEquals("Must be equals", KbP,
+                        interpreter.reasoning(agentA, reversedEng).simplify().simplify().simplify());
+                assertEquals("Must be equals", new And(),
+                        interpreter.reasoning(agentB, reversedEng).simplify().simplify().simplify());
             } catch (Exception e) {
                 throw e;
             }
@@ -633,11 +651,14 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = interpreter.reverseEngineering(actions);
-                assertEquals("Must be equals", new And(KbP), interpreter.reasoning(agentA, reversedEng));
-                assertEquals("Must be equals", new And(KaP), interpreter.reasoning(agentB, reversedEng));
+                assertEquals("Must be equals", KbP,
+                        interpreter.reasoning(agentA, reversedEng).simplify().simplify().simplify());
+                assertEquals("Must be equals", KaP,
+                        interpreter.reasoning(agentB, reversedEng).simplify().simplify().simplify());
 
                 permissions.put(agentB, new HashSet<>(Arrays.asList(agentA, agentB)));
-                assertEquals("Must be equals", new And(KaP, KbP), interpreter.reasoning(agentB, reversedEng));
+                assertEquals("Must be equals", new And(KaP, KbP),
+                        interpreter.reasoning(agentB, reversedEng).simplify().simplify().simplify());
             } catch (Exception e) {
                 throw e;
             }
@@ -654,9 +675,10 @@ public class TestMAKBPInterpreter extends TestCase {
                 Map<Agent, Action> actions = interpreter.getAssociatedAction(agents, pointedWorld);
                 interpreter.executeAction(actions);
                 Map<Agent, Formula> reversedEng = interpreter.reverseEngineering(actions);
-                assertEquals("Must be equals", new And(KbF), interpreter.reasoning(agentA, reversedEng));
-                assertEquals("Must be equals", new And(new And(new Not(KaP), new Not(KaF))),
-                        interpreter.reasoning(agentB, reversedEng));
+                assertEquals("Must be equals", new And(KbF, KbP.getNegation()),
+                        interpreter.reasoning(agentA, reversedEng).simplify().simplify().simplify());
+                assertEquals("Must be equals", new And(new Not(KaP), new Not(KaF)),
+                        interpreter.reasoning(agentB, reversedEng).simplify().simplify().simplify());
             } catch (Exception e) {
                 throw e;
             }
