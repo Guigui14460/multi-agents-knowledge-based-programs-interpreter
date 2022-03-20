@@ -13,6 +13,7 @@ import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.EverybodyKnowledge;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
+import MAKBPInterpreter.agents.ModalLogicAssignment;
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
@@ -131,7 +132,7 @@ public class TestEverybodyKnowledge extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.agents.EverybodyKnowledge#evaluate(Map, Object...)}
+     * {@link MAKBPInterpreter.agents.EverybodyKnowledge#evaluate(MAKBPInterpreter.logic.LogicAssignment)}
      * method.
      */
     @Test
@@ -163,13 +164,13 @@ public class TestEverybodyKnowledge extends TestCase {
         EverybodyKnowledge CK = new EverybodyKnowledge(atom1, new HashSet<>(Arrays.asList(agent, agent2)));
         EverybodyKnowledge CK2 = new EverybodyKnowledge(new Not(atom2), new HashSet<>(Arrays.asList(agent, agent2)));
         try {
-            assertTrue(CK.evaluate(world1.getAssignment(), world1, structure));
+            assertTrue(CK.evaluate(new ModalLogicAssignment(world1.getAssignment(), structure, world1)));
         } catch (Exception e) {
             e.printStackTrace();
             fail("unexpected thrown exception");
         }
         try {
-            assertFalse(CK2.evaluate(world2.getAssignment(), world2, structure));
+            assertFalse(CK2.evaluate(new ModalLogicAssignment(world2.getAssignment(), structure, world2)));
         } catch (Exception e) {
             e.printStackTrace();
             fail("unexpected thrown exception");
@@ -187,25 +188,25 @@ public class TestEverybodyKnowledge extends TestCase {
         EverybodyKnowledge CK3 = new EverybodyKnowledge(atom2, new HashSet<>(Arrays.asList(agent, agent2)));
         EverybodyKnowledge CK4 = new EverybodyKnowledge(atom1, new HashSet<>(Arrays.asList(agent, agent2)));
         try {
-            assertFalse(CK3.evaluate(world1.getAssignment(), world1, structure2));
+            assertFalse(CK3.evaluate(new ModalLogicAssignment(world1.getAssignment(), structure2, world1)));
         } catch (Exception e) {
             e.printStackTrace();
             fail("unexpected thrown exception");
         }
         try {
-            assertFalse(CK3.evaluate(world2.getAssignment(), world2, structure2));
+            assertFalse(CK3.evaluate(new ModalLogicAssignment(world2.getAssignment(), structure2, world2)));
         } catch (Exception e) {
             e.printStackTrace();
             fail("unexpected thrown exception");
         }
         try {
-            assertTrue(CK4.evaluate(world1.getAssignment(), world1, structure2));
+            assertTrue(CK4.evaluate(new ModalLogicAssignment(world1.getAssignment(), structure2, world1)));
         } catch (Exception e) {
             e.printStackTrace();
             fail("unexpected thrown exception");
         }
         try {
-            assertTrue(CK4.evaluate(world2.getAssignment(), world2, structure2));
+            assertTrue(CK4.evaluate(new ModalLogicAssignment(world2.getAssignment(), structure2, world2)));
         } catch (Exception e) {
             e.printStackTrace();
             fail("unexpected thrown exception");

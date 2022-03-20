@@ -13,6 +13,7 @@ import MAKBPInterpreter.agents.AgentProgram;
 import MAKBPInterpreter.agents.Box;
 import MAKBPInterpreter.agents.KripkeStructure;
 import MAKBPInterpreter.agents.KripkeWorld;
+import MAKBPInterpreter.agents.ModalLogicAssignment;
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
@@ -39,7 +40,7 @@ public class TestBox extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.agents.Box#evaluate(Map, Object...)}
+     * {@link MAKBPInterpreter.agents.Box#evaluate(MAKBPInterpreter.logic.LogicAssignment)}
      * method.
      */
     @Test
@@ -68,13 +69,13 @@ public class TestBox extends TestCase {
         KripkeStructure structure = new KripkeStructure(graph, Arrays.asList(agent));
 
         try {
-            assertTrue(Ka.evaluate(world1.getAssignment(), world1, structure));
+            assertTrue(Ka.evaluate(new ModalLogicAssignment(world1.getAssignment(), structure, world1)));
         } catch (Exception e) {
             e.printStackTrace();
             fail("unexpected thrown exception");
         }
         try {
-            assertFalse(Ka2.evaluate(world2.getAssignment(), world2, structure));
+            assertFalse(Ka2.evaluate(new ModalLogicAssignment(world2.getAssignment(), structure, world2)));
         } catch (Exception e) {
             e.printStackTrace();
             fail("unexpected thrown exception");

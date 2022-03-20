@@ -1,6 +1,5 @@
 package MAKBPInterpreter.logic;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -88,7 +87,7 @@ public class Implication implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
-        return !this.leftOperand.evaluate(state, objects) || this.rightOperand.evaluate(state, objects);
+    public boolean evaluate(LogicAssignment assignment) throws Exception {
+        return !this.leftOperand.evaluate(assignment) || this.rightOperand.evaluate(assignment);
     }
 }

@@ -236,7 +236,7 @@ public class TestAgent extends TestCase {
         KripkeStructure structure = new KripkeStructure(graph, agents);
 
         assertEquals("Observation must be retrieved", formula2,
-                agent.reverseEngineering(action2));
+                agent.reverseEngineering(action2).simplify().simplify().simplify());
         assertNull("Observation must be null", agent.reverseEngineering());
         try {
             agent.getAssociatedAction(structure, world);
@@ -244,7 +244,7 @@ public class TestAgent extends TestCase {
             e.printStackTrace();
         }
         assertEquals("Observation must be retrieved", formula2,
-                agent.reverseEngineering());
+                agent.reverseEngineering().simplify().simplify().simplify());
 
         AgentProgram program2 = new AgentProgram(program);
         program2.put(formula1, action2);
@@ -253,9 +253,12 @@ public class TestAgent extends TestCase {
         Agent agent2 = new Agent(name + "0", program2);
 
         assertNull(agent.reverseEngineering(null));
-        assertEquals(new And(new Not(formula2), new Not(formula1), new Not(formula3)).simplify(),
-                agent2.reverseEngineering(action3));
-        assertEquals(new Or(formula1, formula2), agent2.reverseEngineering(action2));
+        assertEquals(
+                new And(formula2.getNegation(), formula1.getNegation(), formula3.getNegation()).simplify().simplify()
+                        .simplify(),
+                agent2.reverseEngineering(action3).simplify().simplify().simplify());
+        assertEquals(new Or(formula1, formula2),
+                agent2.reverseEngineering(action2).simplify().simplify().simplify());
 
         AgentProgram program3 = new AgentProgram(program);
         program3.put(formula1, action2);
@@ -264,9 +267,12 @@ public class TestAgent extends TestCase {
         Agent agent3 = new Agent(name + "1", program3);
 
         assertNull(agent.reverseEngineering(null));
-        assertEquals(formula3, agent3.reverseEngineering(action1));
+        assertEquals(new And(formula3, formula1.getNegation(), formula2.getNegation()),
+                agent3.reverseEngineering(action1).simplify().simplify().simplify());
         assertEquals(
-                new Or(formula1, formula2, new And(new Not(formula1), new Not(formula2), new Not(formula3))).simplify(),
-                agent3.reverseEngineering(action2));
+                new Or(formula2, new And(formula2.getNegation(), formula1),
+                        new And(formula1.getNegation(), formula2.getNegation(), formula3.getNegation())).simplify()
+                        .simplify().simplify(),
+                agent3.reverseEngineering(action2).simplify().simplify().simplify());
     }
 }

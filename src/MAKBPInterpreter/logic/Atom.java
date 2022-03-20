@@ -1,6 +1,5 @@
 package MAKBPInterpreter.logic;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -60,7 +59,11 @@ public class Atom implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) {
-        return state.getOrDefault(this, false);
+    public boolean evaluate(LogicAssignment assignment) throws Exception {
+        if (!(assignment instanceof PropositionalLogicAssignment)) {
+            throw new IllegalArgumentException("the assignment must be a propositional assignment");
+        }
+        PropositionalLogicAssignment assignment2 = (PropositionalLogicAssignment) assignment;
+        return assignment2.getOrDefault(this, false);
     }
 }

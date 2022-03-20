@@ -8,6 +8,7 @@ import org.junit.Test;
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
+import MAKBPInterpreter.logic.PropositionalLogicAssignment;
 import junit.framework.TestCase;
 
 /**
@@ -79,7 +80,7 @@ public class TestAtom extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.logic.Atom#evaluate(java.util.Map, Object...)}
+     * {@link MAKBPInterpreter.logic.Atom#evaluate(MAKBPInterpreter.logic.LogicAssignment)}
      * method.
      */
     @Test
@@ -88,12 +89,25 @@ public class TestAtom extends TestCase {
         Atom atom2 = new Atom("b is muddy");
         Atom atom3 = new Atom("c is muddy");
 
-        Map<Atom, Boolean> assignment = new HashMap<>();
-        assignment.put(atom1, true);
-        assignment.put(atom2, false);
+        Map<Atom, Boolean> assignmentMap = new HashMap<>();
+        assignmentMap.put(atom1, true);
+        assignmentMap.put(atom2, false);
+        PropositionalLogicAssignment assignment = new PropositionalLogicAssignment(assignmentMap);
 
-        assertTrue("The atom must be true", atom1.evaluate(assignment));
-        assertFalse("The atom must be false", atom2.evaluate(assignment));
-        assertFalse("The atom must be false", atom3.evaluate(assignment));
+        try {
+            assertTrue("The atom must be true", atom1.evaluate(assignment));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            assertFalse("The atom must be false", atom2.evaluate(assignment));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            assertFalse("The atom must be false", atom3.evaluate(assignment));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

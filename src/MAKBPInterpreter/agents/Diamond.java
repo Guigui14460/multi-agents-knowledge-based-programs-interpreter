@@ -1,11 +1,8 @@
 package MAKBPInterpreter.agents;
 
-import java.util.Map;
-
-import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
+import MAKBPInterpreter.logic.LogicAssignment;
 import MAKBPInterpreter.logic.Not;
-import MAKBPInterpreter.logic.Or;
 
 /**
  * Represents a knowledge that an agent considers to be true between world in a
@@ -24,18 +21,18 @@ public class Diamond extends AgentKnowledge {
 
     @Override
     public Formula simplify() {
-        return new Or(new Not(new AgentKnowledge(this.agent, this.innerFormula.simplify())),
-                new Not(new AgentKnowledge(this.agent, new Not(this.innerFormula).simplify())));
+        return new Not(new AgentKnowledge(this.agent, new Not(this.innerFormula)));
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
-        // we have always two additionnal arguments but we verify that is the case
-        if (objects.length < 2) {
-            throw new IllegalArgumentException("We must have at least the world and the Kripke structure");
+    public boolean evaluate(LogicAssignment assignment) throws Exception {
+        if (!(assignment instanceof ModalLogicAssignment)) {
+            throw new IllegalArgumentException("the assignment must be a modal logic assignment");
         }
-        KripkeWorld world = (KripkeWorld) objects[0];
-        KripkeStructure structure = (KripkeStructure) objects[1];
+
+        ModalLogicAssignment assignment2 = (ModalLogicAssignment) assignment;
+        KripkeWorld world = assignment2.getWorld();
+        KripkeStructure structure = assignment2.getStructure();
 
         // we check if any connected worlds to the actual world satisfied the formula or
         // not

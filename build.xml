@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="MAKBPInterpreter" default="run" basedir=".">
     <property name="app.name"      value="MAKBPInterpreter" />
-    <property name="app.version"   value="0.3.0"/>
+    <property name="app.version"   value="1.0.0"/>
     <property name="app.fullname"  value="${app.name}-${app.version}"/>
     <property name="app.mainclass"  value="MAKBPInterpreter.Main"/>
     
@@ -12,10 +12,8 @@
     <property name="test.home"     value="${basedir}/src"/>
     <property name="lib.home"      value="${basedir}/lib"/>
     <property name="reports.home"      value="${basedir}/reports"/>
-
     <property name="javac.version"       value="1.8"/>
     <property name="javac.encoding"      value="UTF-8"/>
-
     <!-- ==================== Compile options =========================== -->
     <property name="compile.debug"       value="true"/>
     <property name="compile.deprecation" value="true"/>
@@ -27,10 +25,8 @@
             <include name="**/*.jar"/>
         </fileset>
     </path>
-
     <!-- ==================== All Target ====================================== -->
     <target name="all" depends="clean,compile" description="Clean build and dist directories, then compile"/>
-
     <!-- ==================== Clean Target ==================================== -->
     <target name="clean" description="Delete old build and dist directories">
         <delete dir="${build.home}"/>
@@ -38,7 +34,6 @@
         <delete dir="${doc.home}"/>
         <delete dir="${reports.home}"/>
     </target>
-
     <!-- ==================== Prepare Target ================================== -->
     <target name="init">
         <mkdir dir="${build.home}"/>
@@ -48,7 +43,6 @@
     </target>
   
     <!-- ==================== Compile Target ================================== -->
-
     <target name="compile" depends="init" description="Compile Java sources">
         <javac srcdir="${src.home}"
                destdir="${build.home}"
@@ -65,7 +59,6 @@
             <fileset dir="${src.home}" excludes="**/*.java"/>
         </copy>
     </target>
-
     <!-- ==================== Dist Target ===================================== -->
     <target name="dist" depends="clean,compile,javadoc" description="Create binary distribution">
         <copy  todir="${dist.home}/lib">
@@ -97,17 +90,14 @@
             </classpath>
         </javadoc>
     </target>
-
     <!-- ==================== Run package Target ================================== -->
     <target name="run_dist" description="Only run the previous generated distribution package">
         <java jar="${dist.home}/${app.fullname}.jar" fork="true" />
     </target>
-
     <!-- ==================== Run Target ================================== -->
     <target name="run" depends="dist" description="Build the distribution package and run the application">
         <java jar="${dist.home}/${app.fullname}.jar" fork="true" />
     </target>
-
     <!-- ==================== Test Target ================================== -->
     <target name="test" depends="dist" description="Test the whole package">
         <junit printsummary="yes" haltonfailure="no">
@@ -116,7 +106,6 @@
                 <pathelement location="${test.home}"/>
                 <pathelement location="${build.home}"/>
             </classpath>
-
             <formatter type="plain" />
             <batchtest fork="yes" todir="${reports.home}">
                 <fileset dir="${test.home}">

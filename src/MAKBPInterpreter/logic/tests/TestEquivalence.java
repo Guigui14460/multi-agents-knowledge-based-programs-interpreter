@@ -11,6 +11,7 @@ import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Equivalence;
 import MAKBPInterpreter.logic.Not;
 import MAKBPInterpreter.logic.Or;
+import MAKBPInterpreter.logic.PropositionalLogicAssignment;
 import junit.framework.TestCase;
 
 /**
@@ -130,7 +131,7 @@ public class TestEquivalence extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.logic.Equivalence#evaluate(java.util.Map, Object...)}
+     * {@link MAKBPInterpreter.logic.Equivalence#evaluate(MAKBPInterpreter.logic.LogicAssignment)}
      * method.
      */
     @Test
@@ -141,10 +142,11 @@ public class TestEquivalence extends TestCase {
         Equivalence equivalence1 = new Equivalence(atom1, atom2);
         Equivalence equivalence2 = new Equivalence(atom2, atom3);
 
-        Map<Atom, Boolean> assignment = new HashMap<>();
-        assignment.put(atom1, true);
-        assignment.put(atom2, true);
-        assignment.put(atom3, false);
+        Map<Atom, Boolean> assignmentMap = new HashMap<>();
+        assignmentMap.put(atom1, true);
+        assignmentMap.put(atom2, true);
+        assignmentMap.put(atom3, false);
+        PropositionalLogicAssignment assignment = new PropositionalLogicAssignment(assignmentMap);
 
         try {
             assertTrue("The atom must be true", equivalence1.evaluate(assignment));

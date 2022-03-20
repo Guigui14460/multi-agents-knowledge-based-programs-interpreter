@@ -1,6 +1,5 @@
 package MAKBPInterpreter.logic;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -82,7 +81,7 @@ public class Not implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
-        return !this.operand.evaluate(state, objects);
+    public boolean evaluate(LogicAssignment assignment) throws Exception {
+        return !this.operand.evaluate(assignment);
     }
 }

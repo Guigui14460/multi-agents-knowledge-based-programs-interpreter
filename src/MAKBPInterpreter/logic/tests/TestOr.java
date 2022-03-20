@@ -14,6 +14,7 @@ import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
 import MAKBPInterpreter.logic.Or;
+import MAKBPInterpreter.logic.PropositionalLogicAssignment;
 import junit.framework.TestCase;
 
 /**
@@ -147,7 +148,7 @@ public class TestOr extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.logic.Or#evaluate(java.util.Map, Object...)}
+     * {@link MAKBPInterpreter.logic.Or#evaluate(MAKBPInterpreter.logic.LogicAssignment)}
      * method.
      */
     @Test
@@ -158,10 +159,11 @@ public class TestOr extends TestCase {
         Or or1 = new Or(atom1, atom2);
         Or or2 = new Or(atom2, atom3);
 
-        Map<Atom, Boolean> assignment = new HashMap<>();
-        assignment.put(atom1, true);
-        assignment.put(atom2, false);
-        assignment.put(atom3, false);
+        Map<Atom, Boolean> assignmentMap = new HashMap<>();
+        assignmentMap.put(atom1, true);
+        assignmentMap.put(atom2, false);
+        assignmentMap.put(atom3, false);
+        PropositionalLogicAssignment assignment = new PropositionalLogicAssignment(assignmentMap);
 
         try {
             assertTrue("The atom must be true", or1.evaluate(assignment));

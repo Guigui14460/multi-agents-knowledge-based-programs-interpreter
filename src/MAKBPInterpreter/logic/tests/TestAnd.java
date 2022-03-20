@@ -14,6 +14,7 @@ import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
 import MAKBPInterpreter.logic.Or;
+import MAKBPInterpreter.logic.PropositionalLogicAssignment;
 import junit.framework.TestCase;
 
 /**
@@ -148,7 +149,7 @@ public class TestAnd extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.logic.And#evaluate(java.util.Map, Object...)}
+     * {@link MAKBPInterpreter.logic.And#evaluate(MAKBPInterpreter.logic.LogicAssignment)}
      * method.
      */
     @Test
@@ -159,10 +160,11 @@ public class TestAnd extends TestCase {
         And and1 = new And(atom1, atom2);
         And and2 = new And(atom1, atom3);
 
-        Map<Atom, Boolean> assignment = new HashMap<>();
-        assignment.put(atom1, true);
-        assignment.put(atom2, false);
-        assignment.put(atom3, true);
+        Map<Atom, Boolean> assignmentMap = new HashMap<>();
+        assignmentMap.put(atom1, true);
+        assignmentMap.put(atom2, false);
+        assignmentMap.put(atom3, true);
+        PropositionalLogicAssignment assignment = new PropositionalLogicAssignment(assignmentMap);
 
         try {
             assertFalse("The atom must be false", and1.evaluate(assignment));

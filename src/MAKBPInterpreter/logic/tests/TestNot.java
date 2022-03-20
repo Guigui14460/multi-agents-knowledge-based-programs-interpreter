@@ -8,6 +8,7 @@ import org.junit.Test;
 import MAKBPInterpreter.logic.Atom;
 import MAKBPInterpreter.logic.Formula;
 import MAKBPInterpreter.logic.Not;
+import MAKBPInterpreter.logic.PropositionalLogicAssignment;
 import junit.framework.TestCase;
 
 /**
@@ -99,7 +100,7 @@ public class TestNot extends TestCase {
 
     /**
      * Tests the
-     * {@link MAKBPInterpreter.logic.Not#evaluate(java.util.Map, Object...)}
+     * {@link MAKBPInterpreter.logic.Not#evaluate(MAKBPInterpreter.logic.LogicAssignment)}
      * method.
      */
     @Test
@@ -110,9 +111,10 @@ public class TestNot extends TestCase {
         Not not2 = new Not(atom2);
         Not not3 = new Not(not1);
 
-        Map<Atom, Boolean> assignment = new HashMap<>();
-        assignment.put(atom1, true);
-        assignment.put(atom2, false);
+        Map<Atom, Boolean> assignmentMap = new HashMap<>();
+        assignmentMap.put(atom1, true);
+        assignmentMap.put(atom2, false);
+        PropositionalLogicAssignment assignment = new PropositionalLogicAssignment(assignmentMap);
 
         try {
             assertFalse("The atom must be false", not1.evaluate(assignment));

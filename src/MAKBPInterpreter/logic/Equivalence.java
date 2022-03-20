@@ -1,6 +1,5 @@
 package MAKBPInterpreter.logic;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -89,9 +88,9 @@ public class Equivalence implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
-        boolean evalLeft = this.leftOperand.evaluate(state, objects);
-        boolean evalRight = this.rightOperand.evaluate(state, objects);
+    public boolean evaluate(LogicAssignment assignment) throws Exception {
+        boolean evalLeft = this.leftOperand.evaluate(assignment);
+        boolean evalRight = this.rightOperand.evaluate(assignment);
 
         return (!evalLeft || evalRight) && (!evalRight || evalLeft);
     }

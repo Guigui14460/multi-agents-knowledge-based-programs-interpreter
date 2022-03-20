@@ -60,7 +60,7 @@ public class KripkeWorld {
      * @throws Exception thrown if an illegal argument is passed
      */
     public boolean satisfied(Formula formula, KripkeStructure structure) throws Exception {
-        return formula.evaluate(this.assignment, this, structure);
+        return formula.evaluate(new ModalLogicAssignment(this.assignment, structure, this));
     }
 
     /**

@@ -1,7 +1,5 @@
 package MAKBPInterpreter.logic;
 
-import java.util.Map;
-
 /**
  * Represents the base of all components of the modal and epistemic logic
  * representation.
@@ -42,11 +40,10 @@ public interface Formula {
     /**
      * Evaluates a state that we passed into arguments.
      * 
-     * @param state   state to evaluate
-     * @param objects other objects that we possibly need to make an evaluation
+     * @param assignment state to evaluate
      * @return result of the evaluation
      * @throws Exception throws when the formula not supported this operation or
      *                   expected object not given
      */
-    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception;
+    public boolean evaluate(LogicAssignment assignment) throws Exception;
 }

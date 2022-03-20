@@ -3,7 +3,6 @@ package MAKBPInterpreter.logic;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -142,10 +141,10 @@ public class Or implements Formula {
     }
 
     @Override
-    public boolean evaluate(Map<Atom, Boolean> state, Object... objects) throws Exception {
+    public boolean evaluate(LogicAssignment assignment) throws Exception {
         boolean result = false;
         for (Formula formula : this.operands) {
-            result = result || formula.evaluate(state, objects);
+            result = result || formula.evaluate(assignment);
         }
         return result;
     }
