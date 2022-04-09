@@ -52,4 +52,4 @@ $ ant -p
 - [LETELLIER Guillaume](https://github.com/Guigui14460)
 
 ## License
-Project under the GNU General Public License v3.0.
+Project under the "GNU General Public License v3.0" license.
